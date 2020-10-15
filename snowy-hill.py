@@ -47,18 +47,20 @@ parser.add_argument("-j", "--ejemplo", help="La cadena <entropia> se expandira (
 parser.add_argument("entropia", help="Origen de la derivación (semilla (E), mnemonico, seed, xpriv...)")
 args = parser.parse_args()
 
-# Aquí procesamos lo que se tiene que hacer con cada argumento
-
-if args.secreto:
-    secreto=" -p " + args.secreto
-else:
-    secreto=""
-
-# Usar el valor <entropia> como fuente de la frase mnemonica o como seed
-entropiaAmnemonico=args.derivarmnemonico
-
 # Almacenar el valor <entropia> en variable para separar lo del esquema de argumentos.
 semilla=args.entropia
+entropiaAmnemonico=args.derivarmnemonico
+
+# Aquí procesamos lo que se tiene que hacer con cada argumento
+
+if args.ejemplo: # Defino unos valores para usarlos como ejemplo y estudio.
+    semilla=semilla*32 # cadena multiplo de 32
+    entropiaAmnemonico=True # El ejemplo debe derivar desde entropia a mnemonico
+
+if args.secreto:
+    secreto=args.secreto
+else:
+    secreto=""
 
 if (args.testnet):
     hd_new       =" hd-new --version 70615956 "
@@ -79,11 +81,6 @@ if args.esquema:
     esquema = args.esquema
 else: 
     esquema=BIP44
-
-if args.ejemplo: # Defino unos valores para usarlos como ejemplo y estudio.
-    esquema=BIP44
-    semilla=semilla*32 # cadena multiplo de 32  
-    entropiaAmnemonico=True # El ejemplo debe derivar desde entropia a mnemonico
 
 if args.verbose:
     print(semilla)
@@ -150,7 +147,6 @@ def derivacion(entropia, esquema="m/44'/0'/0'/0/0", contrasena="", entropiaAmnem
     else:
         arbol["seed"] = entropia
 
-#    print("\n")
     print("Entropia  : " + arbol["E"])
     print("mnemonico : " + arbol["mnemonico"])
     print("Seed      : " + arbol["seed"])
@@ -194,9 +190,8 @@ def derivacion(entropia, esquema="m/44'/0'/0'/0/0", contrasena="", entropiaAmnem
 
     # Si quiero generar varias direcciones de pago lo indico los valores inicial y final: i,j
     y = (deriva[-1].strip("'")).split(",")
-
     # Bucle para generar las direcciones de pago.
-    for i in range(int(y[0]),int(y[-1])+1):
+    for i in range(int(y[0]),int(y[-1])+1): # y[-1] representa el ultimo elemento del array. Range no incluye el ultimo por eso +1
         xprv_fin=(os.popen("bx hd-private -i %d %s %s" %(i, duro, temporal)).read()).rstrip("\n")
         #direccion = dict{"xprv", "xpub", "ec", "wif", "ec_pub", "address"}
         pago=direccionesdepago(xprv_fin)
