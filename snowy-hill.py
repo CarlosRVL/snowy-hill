@@ -146,6 +146,74 @@ def main():
 
 
 ########################################################################################
+class cartera:
+    """
+    Realiza la derivacion de una familia de direcciones a raiz de una semilla. 
+    Se puede iniciar la derivacion a varias alturas. 
+    """
+    E=''          # Valor utilizado como origen aleatorio
+    mnemonico=''  # Frase mnemonica
+    contrasena='' # cadena que unida a mnemonico generara la semilla
+    seed=''       # Semilla para generar la familia de claves
+    esquema=''    # Esquema de derivacion, ejemplo:  m/44'/0'/0'/0/0
+    m=''
+    M=''
+    xpriv=''
+    xpub=''
+    pagos=[]
+
+    def __init__(self, entropia, esquema="m/44'/0'/0'/0/0", contrasena="", entropiaAmnemonico=False):
+        """
+        Inicializa el objeto. Si entropia contiene dato se despliega la derivacion.
+        """
+        if (entropia):
+            self.desplegar_seed(entropia, esquema="m/44'/0'/0'/0/0", contrasena="", entropiaAmnemonico=False) 
+
+    def desplegar_seed(self, entropia, esquema="m/44'/0'/0'/0/0", contrasena="", entropiaAmnemonico=False):
+        """
+        La familia de claves se deriva a partir de la semilla (seed) con un cierto formato.
+        Pero se puede iniciar la secuencia antes: E -> mnemonico [+ passw] -> seed
+        Esta clase permite derivar desde cualquier posicion. Para ello el parametro
+        <entropia> se matiza segun:
+        Si <entropiaAmneminico> es True: representa el valor E
+        Sino SI contiene mas de una cadena: se trata de una frase mnemonica
+        En otro caso: representa seed
+        ... PROPUESTA: SI NO FACILITA <ESQUEMA> SOLO SE DESARROLLA HASTA EL SEED. 
+        """
+
+        frase = '' # entropia.split() # puede ser una frase o una semilla, decision a continuacion
+
+        if(entropiaAmnemonico): # Si es true se debe generar una frase a partir de la entropia
+            self.E=entropia
+            self.mnemonico=(os.popen("bx mnemonic-new " + self.E).read()).rstrip("\n")
+            frase = self.mnemonico.split()
+        else: 
+            frase = entropia.split() 
+            if(len(frase)>1): #Si contiene mas de una palabra es un mnemonico
+                self.mnemonico=entropia
+            else: # en otro caso <entropia> contiene el Seed. No contamos con el mnemonico.
+                self.seed=entropia
+
+        if(self.mnenomico): #Si mnemonico contiene datos...
+            self.contrasena=contrasena
+            parametro_contrasena = " -p \"%s\" " %(self.contrasena)
+            self.seed=(os.popen("bx mnemonic-to-seed " + self.mnemonico + parametro_contrasena).read()).rstrip("\n")
+        # En caso contrario <mnemonico> estará vacio y <seed> contrendra el valor de entropia 
+        
+        # SIGUIENTES PASOS
+        # - RECORRER EL ARBOL DE DERIVACION: NUEVO METODO
+        # - GENERAR LAS CORRESPONDIENTES DIRECCIONES DE PAGO. NUEVO METODO. 
+        def arbol(self, seed, esquema): 
+            pass
+        def pago(self, xprv):
+            pass
+        def print(self):
+            pass
+
+
+
+
+########################################################################################
 def derivacion(entropia, esquema="m/44'/0'/0'/0/0", contrasena="", entropiaAmnemonico=False):
     """
     Desarrolla secuencia de derivación desde la <entropia> hasta la <direccion>
