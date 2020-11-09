@@ -3,3 +3,4 @@ basedepruebas.txt
 *.save
 *.save.*
 *.swp
+__pycache__

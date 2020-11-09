@@ -1,5 +1,5 @@
 ########################################################################################
-# derivadordellaves.py
+# snowy_hill.py
 # Generacion de una cartera (en mainnet y testnet).
 # La obtencion de las llaves privadas y publicas a partir de una semilla
 #  implica una serie de pasos poco intuitivos. Esta herramienta facilita esta
@@ -20,14 +20,6 @@
 #P2PKH
 #P2SH
 #BENCH
-########################################################################################
-
-import os # para poder ejecutar comandos de shell
-import argparse #Manejo de argumentos en linea de comandos
-import sys
-from subprocess import Popen, PIPE
-
-
 ### CONSTANTES # Comentadas porque no las utilizo  finalmente.
 #BIP141= "m/0/0"
 #BIP84 = "m/84'/0'/0'/0/0"
@@ -35,52 +27,35 @@ from subprocess import Popen, PIPE
 #BIP44 = "m/44'/0'/0'/0/0"
 #BIP44T = "m/44'/1'/0'/0/0"
 #BIP32 = "m/0/0"
+########################################################################################
 
-### Variables globales: 
-"""
- Las siguientes variables almacenan los comandos de bx, con el 
- objetivo de modificarlas, principalmente para testnet.
-"""
-hd_new="hd-new "
-hd_public="hd-public "
-hd_to_ec="hd-to-ec "
-ec_to_wif="ec-to-wif "
-ec_to_address="ec-to-address "
+import os # para poder ejecutar comandos de shell
+import argparse #Manejo de argumentos en linea de comandos
+import sys
+from subprocess import Popen, PIPE
 
+VERBOSE=False
+DEPURA=False
 
 ### Funciones: ###
 
 ########################################################################################
 def main():
     'Funcion inicial.'
-    global hd_new
-    global hd_public
-    global hd_to_ec
-    global ec_to_wif
-    global ec_to_address
-
+    global VERBOSE
+    
     # Comprobar que existe el programa bx
     try:
-#        Popen(['bx', '--help'], stdout=PIPE, stderr=PIPE)
         Popen('bx', stdout=PIPE, stderr=PIPE)
     except OSError:
         msg = "No puedo ejecutar bx, necesario para la derivación.\nLocalizable en https://github.com/libbitcoin/libbitcoin-explorer\n"
         sys.exit(msg)
 
-
     parser = argparse.ArgumentParser()
     parser = argparse.ArgumentParser(description='%(prog)s : Derivar arbol de claves BTC.')
 
-    #parser = argparse.ArgumentParser(formatter_class=argparse.RawDescriptionHelpFormatter,\
-    #    description='%(prog)s : Derivar arbol de claves BTC.\n\
-    #     Entropia, uno de los siguientes:\n\
-    #        (E)  : Valor utilizado como origen aleatorio, derivara en mnemonico. Normalizado en Base16, debe tener una logitud divisible entre 32.\n\
-    #        frase: mnemonico (BIP39), derivara en seed.\n\
-    #        seed : representacion numerica del mnemonico bip39, \n\
-    #')
-
     parser.add_argument("-v", "--verbose", help="Mostrar información de depuración", action="store_true")
-    parser.add_argument("-f", "--file", help="Nombre de archivo a procesar")
+    parser.add_argument("-f", "--file", help="Nombre de archivo a procesar. SIN IMPLEMENTAR AUN")
     parser.add_argument("-t", "--testnet", help="Realizar la derivacion en TESTNET", action="store_true")
     parser.add_argument("-d", "--derivarmnemonico", help="El valor de entropia deriva el mnemonico", action="store_true")
     parser.add_argument("-e", "--esquema", help="Esquema de derivación. eje: m/44'/0'/0'/0/0")
@@ -96,7 +71,7 @@ def main():
     # Aquí procesamos lo que se tiene que hacer con cada argumento
 
     if args.ejemplo: # Defino unos valores para usarlos como ejemplo y estudio.
-        semilla=semilla*32 # cadena multiplo de 32
+        semilla=semilla*32 # cadena multiplo de 32.
         entropiaAmnemonico=True # El ejemplo debe derivar desde entropia a mnemonico
 
     if args.secreto:
@@ -105,18 +80,8 @@ def main():
         secreto=""
 
     if (args.testnet):
-        hd_new       =" hd-new --version 70615956 "
-        hd_public    =" hd-public --config test.cfg "  #no funciona con --version 70617039
-        hd_to_ec     =" hd-to-ec --config test.cfg "
-        ec_to_wif    =" ec-to-wif --version 239 " # (-u)
-        ec_to_address=" ec-to-address --version 111 "
         BIP44 = "m/44'/1'/0'/0/0"
     else:
-        hd_new       =" hd-new "
-        hd_public    =" hd-public "
-        hd_to_ec     =" hd-to-ec "
-        ec_to_wif    =" ec-to-wif " # (-u)
-        ec_to_address=" ec-to-address "
         BIP44 = "m/44'/0'/0'/0/0"
 
     if args.esquema:
@@ -125,22 +90,25 @@ def main():
         esquema=BIP44
 
     if args.verbose:
-        print(semilla)
-        print(esquema)
-        print(secreto)
-        print(entropiaAmnemonico)
-
+        VERBOSE = True
+        print("Semilla: "+semilla)
+        print("Esquema: "+esquema)
+        print("Secreto: "+secreto)
+        print("A mnemonico: "+str(entropiaAmnemonico))
 
 
     #direccion = dict{"xprv", "xpub", "ec", "wif", "ec_pub", "address"}
-    arbol=dict()
-    arbol={'E':"",'mnemonico':"",'contrasena':"",'seed':"",'esquema':"",'m':'', 'M':'','xpriv':[], 'xpub':[], 'pagos':[]}
-    direccion = dict() # Definir variable tipo diccionario
-    direccion={'xprv':"", 'xpub':"", 'ec':"", 'wif':"", 'ec_pub':"", 'address_p2pkh':""}
+#    arbol=dict()
+#    arbol={'E':"",'mnemonico':"",'contrasena':"",'seed':"",'esquema':"",'m':'', 'M':'','xpriv':[], 'xpub':[], 'pagos':[]}
+#    direccion = dict() # Definir variable tipo diccionario
+#    direccion={'xprv':"", 'xpub':"", 'ec':"", 'wif':"", 'ec_pub':"", 'address_p2pkh':""}
+#
+#    procesar_parametros()
+#    derivacion(semilla, esquema, secreto, entropiaAmnemonico)
 
     print("=====================================")
-#    procesar_parametros()
-    derivacion(semilla, esquema, secreto, entropiaAmnemonico)
+    carteraA=cartera(semilla, esquema, secreto, entropiaAmnemonico, args.testnet)
+    carteraA.print_consola()
     print("=====================================")
 
 
@@ -151,25 +119,71 @@ class cartera:
     Realiza la derivacion de una familia de direcciones a raiz de una semilla. 
     Se puede iniciar la derivacion a varias alturas. 
     """
-    E=''          # Valor utilizado como origen aleatorio
-    mnemonico=''  # Frase mnemonica
-    contrasena='' # cadena que unida a mnemonico generara la semilla
-    seed=''       # Semilla para generar la familia de claves
-    esquema=''    # Esquema de derivacion, ejemplo:  m/44'/0'/0'/0/0
-    m=''
-    M=''
-    xpriv=''
-    xpub=''
+    semilla=['', '', '', '', ''] # E, Mnemon, Seed, m, M
+    indice_m=3 # posicion de m en semilla[]
+    esquema="m/44'/0'/0'/0/0"    # Esquema de derivacion por defecto 
+    esquema_derivacion=[] # ["m","0'",...]
+    esquema_pagos=[] # [ini, fin]
+#    master_node='' # "m" en la documentacion
+    HDxp=[]  # almacena [xpriv, xpub] de un determinado nivel. 
     pagos=[]
+    testnet=False
 
-    def __init__(self, entropia, esquema="m/44'/0'/0'/0/0", contrasena="", entropiaAmnemonico=False):
-        """
-        Inicializa el objeto. Si entropia contiene dato se despliega la derivacion.
-        """
-        if (entropia):
-            self.desplegar_seed(entropia, esquema="m/44'/0'/0'/0/0", contrasena="", entropiaAmnemonico=False) 
+    """
+     Las siguientes variables almacenan los comandos de bx, con el
+     objetivo de modificarlas, principalmente para testnet.
+    """
+    hd_new="hd-new "
+    hd_public="hd-public "
+    #hd_to_ec="hd-to-ec "
+    #ec_to_wif="ec-to-wif "
+    #ec_to_address="ec-to-address "
 
-    def desplegar_seed(self, entropia, esquema="m/44'/0'/0'/0/0", contrasena="", entropiaAmnemonico=False):
+    def __init__(self, entropia="", esquema="", contrasena="", entropiaAmnemonico=False, testnet=False):
+        """Inicializa el objeto. Si entropia contiene dato se despliega la derivacion.
+            self.hd_new       ="hd-new --version 70615956 "
+            self.hd_public    ="hd-public --config test.cfg "  #no funciona con --version 70617039
+            self.hd_to_ec     ="hd-to-ec --config test.cfg "
+            self.ec_to_wif    ="ec-to-wif --version 239 " # (-u)
+            self.ec_to_address="ec-to-address --version 111 "
+        """
+        self.testnet=testnet
+        if (self.testnet):
+            self.hd_new       ="hd-new --version 70615956 "
+            self.hd_public    ="hd-public --config test.cfg "  #no funciona con --version 70617039
+        else:
+            self.hd_new       ="hd-new " # 76066276, 049d7878 to produce a "yprv" prefix. Testnet uses 0x044a5262 "upub" and 0x044a4e28 "uprv."
+            self.hd_public    ="hd-public "
+
+        if (esquema):
+            self.esquema = esquema
+        self.esquema_derivacion = self.esquema.split("/")
+        self.contrasena=contrasena
+
+        if (entropia): # Si se inicializa con un valor de entropia desarrollamos
+            self.desplegar_seed(entropia,entropiaAmnemonico) 
+            # Y continuamos descendiendo
+            for indice in self.esquema_derivacion[:]: # El ultimo se trabaja de manera especial
+                indice.strip() # Limpiar espacio en blanco
+                if "'" in indice:
+                    parametro_dureza=" --hard "
+                else:
+                    parametro_dureza=""
+
+                # La clave identificada como m o M es especial.
+                if indice == "m":
+                    self.HDxp.append(self.semilla[self.indice_m : self.indice_m+2])
+                    #self.HDxp.append([self.semilla[self.indice_m], self.semilla[self.indice_m+1])
+                    #xpub = (os.popen("bx hd-public  -i %s %s %s " %(indice, parametro_dureza, origen)).read()).rstrip("\n")
+                    continue
+                else:
+                    pass
+
+                self.desarrollo_hd(self.HDxp[-1][0], indice.strip("'"), parametro_dureza)
+
+
+
+    def desplegar_seed(self, entropia, entropiaAmnemonico=False):
         """
         La familia de claves se deriva a partir de la semilla (seed) con un cierto formato.
         Pero se puede iniciar la secuencia antes: E -> mnemonico [+ passw] -> seed
@@ -181,34 +195,121 @@ class cartera:
         ... PROPUESTA: SI NO FACILITA <ESQUEMA> SOLO SE DESARROLLA HASTA EL SEED. 
         """
 
-        frase = '' # entropia.split() # puede ser una frase o una semilla, decision a continuacion
-
         if(entropiaAmnemonico): # Si es true se debe generar una frase a partir de la entropia
-            self.E=entropia
-            self.mnemonico=(os.popen("bx mnemonic-new " + self.E).read()).rstrip("\n")
-            frase = self.mnemonico.split()
-        else: 
-            frase = entropia.split() 
+            i=0
+        else:
+            frase = entropia.split() # puede ser una frase o una semilla, decision a continuacion
             if(len(frase)>1): #Si contiene mas de una palabra es un mnemonico
-                self.mnemonico=entropia
+                i=1
             else: # en otro caso <entropia> contiene el Seed. No contamos con el mnemonico.
-                self.seed=entropia
+                i=2
+        self.semilla[i]=entropia # Almacenar entropia en la posicion adecuada.
+        parametro_contrasena = " -p \"%s\" " %(self.contrasena)
 
-        if(self.mnenomico): #Si mnemonico contiene datos...
-            self.contrasena=contrasena
-            parametro_contrasena = " -p \"%s\" " %(self.contrasena)
-            self.seed=(os.popen("bx mnemonic-to-seed " + self.mnemonico + parametro_contrasena).read()).rstrip("\n")
-        # En caso contrario <mnemonico> estará vacio y <seed> contrendra el valor de entropia 
-        
-        # SIGUIENTES PASOS
-        # - RECORRER EL ARBOL DE DERIVACION: NUEVO METODO
-        # - GENERAR LAS CORRESPONDIENTES DIRECCIONES DE PAGO. NUEVO METODO. 
-        def arbol(self, seed, esquema): 
-            pass
-        def pago(self, xprv):
-            pass
-        def print(self):
-            pass
+        # Almaceno las funciones a utilizar en la derivacion.
+        lderivacion=[lambda E: (os.popen("bx mnemonic-new " + E).read()).rstrip("\n"),\
+                lambda Mn:(os.popen("bx mnemonic-to-seed " + Mn + parametro_contrasena).read()).rstrip("\n"),\
+                lambda S: (os.popen("bx "+ self.hd_new + S).read()).rstrip("\n") ,\
+#                lambda Pr:(os.popen("bx hd-private -i %s %s %s " %(indice, duro, Pr)).read()).rstrip("\n"),\
+#                lambda Pr:(os.popen("bx hd-public  -i %s %s %s " %(indice, duro, Pr)).read()).rstrip("\n"),\
+                ]
+
+        for j in range(i,len(lderivacion)):
+            self.semilla[j+1]=lderivacion[j](self.semilla[j])
+
+
+
+    def desarrollo_hd(self, origen, indice, parametro_dureza=""):
+        xprv = (os.popen("bx hd-private -i %s %s %s " %(indice, parametro_dureza, origen)).read()).rstrip("\n")
+        xpub = (os.popen("bx hd-public  -i %s %s %s " %(indice, parametro_dureza, origen)).read()).rstrip("\n")
+        self.HDxp.append([xprv, xpub])
+
+
+
+    def arbol(self, seed, esquema ):
+        pass
+
+
+
+    def pago(self, xprv):
+        pass
+
+
+
+    def print_consola(self):
+        print("Entropia  : " + self.semilla[0])
+        print("mnemonico : " + self.semilla[1])
+        print("Seed      : " + self.semilla[2])
+        print("Esquema   : " + self.esquema)
+        print("m (HD prv): " + self.semilla[3])
+        print("M (HD pub): " + self.semilla[4])
+
+        print("---- Depura ----")
+        i=0
+        for HD in self.HDxp :
+            try :
+                nivel = self.esquema_derivacion[i]
+                print ("- %4s: %s" %(nivel, HD[0])) #(self.HDxp[i])[0]))
+                if VERBOSE:
+                    print ("      - %s" %(HD[1])) #(self.HDxp[i])[1]))
+            except:
+                print("Error. Nos salimos del array HDxp.", sys.exc_info()[0])
+            i+=1
+
+
+########################################################################################
+class direccion_pago(object):
+    """
+    Para la version Testnet, asumimos que existe el fichero test.cfg con la configuracion necesaria. 
+    ATENCION: No realizo control de esistencia del fichero. 
+    """
+    xprv=""
+    xpub=""
+    ec=""
+    wif=""
+    ec_pub=""
+    address_p2pkh=""
+
+
+    def __init__(self, privada, testnet=False):
+        self.xprv = privada
+        if (testnet):
+            #self.hd_new       ="hd-new --version 70615956 "
+            self.hd_public    ="hd-public --config test.cfg "  #no funciona con --version 70617039
+            self.hd_to_ec     ="hd-to-ec --config test.cfg "
+            self.ec_to_wif    ="ec-to-wif --version 239 " # (-u)
+            self.ec_to_address="ec-to-address --version 111 "
+        else:
+            #self.hd_new       ="hd-new "
+            self.hd_public    ="hd-public "
+            self.hd_to_ec     ="hd-to-ec "
+            self.ec_to_wif    ="ec-to-wif " # (-u)
+            self.ec_to_address="ec-to-address "
+
+        self.deriva()
+
+
+    def deriva(self):
+        """
+        derivar las direcciones de pago finales a partir de una hd xprv.
+            - Clave privada (XPrv) + Matematica de curva eliptica (EC) = Clave publica (XPub)
+            - Clave publica + transformaciones = direccion bitcoin
+        ec_privada, wif, ec_publica, address (P2PKH)....
+        la ec_privada parece no ser demasiado interesante,
+        suele ser mas utilizada en formato wif
+        Secuencia:
+            <xprv>   =  Valor de entrada   ;  <xpub>  =  bx hd-public <xprv>
+            <ec>     =  bx hd-to-ec <xprv>
+            <wif>    =  bx ec-to-wif <ec>
+            <ec_pub> =  bx wif-to-public <wif>
+            <address_p2pkh>  = bx ec-to-address <ec_pub>
+        """
+        self.xpub         =(os.popen("bx " + hd_public + (self.xprv)).read()).rstrip("\n")
+        self.ec           =(os.popen("bx "+ hd_to_ec + self.xprv).read()).rstrip("\n")
+        self.wif          =(os.popen("bx "+ ec_to_wif + self.ec).read()).rstrip("\n")
+        self.ec_pub       =(os.popen("bx wif-to-public " + self.wif).read()).rstrip("\n")
+        self.address_p2pkh=(os.popen("bx "+ ec_to_address + self.ec_pub).read()).rstrip("\n")
+
 
 
 
@@ -344,38 +445,7 @@ def derivacion(entropia, esquema="m/44'/0'/0'/0/0", contrasena="", entropiaAmnem
 
     return 1
 
-########################################################################################
-class direccion_pago(object):
-    xprv=""
-    xpub=""
-    ec=""
-    wif=""
-    ec_pub=""
-    address_p2pkh=""
 
-    def __init__(privada):
-        self.xprv = privada
-
-    def deriva(self):
-        """
-        derivar las direcciones de pago finales a partir de una hd xprv.
-            - Clave privada (XPrv) + Matematica de curva eliptica (EC) = Clave publica (XPub)
-            - Clave publica + transformaciones = direccion bitcoin
-        ec_privada, wif, ec_publica, address (P2PKH)....
-        la ec_privada parece no ser demasiado interesante,
-        suele ser mas utilizada en formato wif
-        Secuencia:
-            <xprv>   =  Valor de entrada   ;  <xpub>  =  bx hd-public <xprv>
-            <ec>     =  bx hd-to-ec <xprv>
-            <wif>    =  bx ec-to-wif <ec>
-            <ec_pub> =  bx wif-to-public <wif>
-            <address_p2pkh>  = bx ec-to-address <ec_pub>
-        """
-        self.xpub         =(os.popen("bx" + hd_public + (self.xprv)).read()).rstrip("\n")
-        self.ec           =(os.popen("bx"+ hd_to_ec + self.xprv).read()).rstrip("\n")
-        self.wif          =(os.popen("bx"+ ec_to_wif + self.ec).read()).rstrip("\n")
-        self.ec_pub       =(os.popen("bx wif-to-public " + self.wif).read()).rstrip("\n")
-        self.address_p2pkh=(os.popen("bx"+ ec_to_address + self.ec_pub).read()).rstrip("\n")
 
 
 
@@ -444,4 +514,9 @@ def DesdeWif(wif):
 
 ########################################################################################
 ### Llamar a funcion principal.###
-main()
+if __name__ == "__main__":
+    #import sys
+    #    fib(int(sys.argv[1]))
+    main()
+
+
