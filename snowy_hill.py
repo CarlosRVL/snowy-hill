@@ -34,8 +34,11 @@ import argparse #Manejo de argumentos en linea de comandos
 import sys
 from subprocess import Popen, PIPE
 
+
 VERBOSE=False
 DEPURA=False
+FICHERO_CONFIGURACION_TESTNET="test.cfg"
+FICHERO_CONFIGURACION_MAINNET="bxcfg"
 
 ### Funciones: ###
 
@@ -61,6 +64,7 @@ def main():
     parser.add_argument("-e", "--esquema", help="Esquema de derivación. eje: m/44'/0'/0'/0/0")
     parser.add_argument("-s", "--secreto", help="Contraseña para añadir al mnemonico")
     parser.add_argument("-j", "--ejemplo", help="La cadena <entropia> se expandira (x32) y se utilizara esquema BIP44.", action="store_true")
+    parser.add_argument("-o", "--old", help="Ejecutar la version antigua.", action="store_true")
     parser.add_argument("entropia", help="Origen de la derivación (semilla (E), mnemonico, seed, xpriv...)")
     args = parser.parse_args()
 
@@ -79,8 +83,12 @@ def main():
     else:
         secreto=""
 
-    if (args.testnet):
-        BIP44 = "m/44'/1'/0'/0/0"
+    if (args.testnet):  #comprobar que existe fichero de configuracion para testnet. 
+        if path.exists(FICHERO_CONFIGURACION_TESTNET):
+            BIP44 = "m/44'/1'/0'/0/0"
+        else:
+            print ("Error: no existe el fichero de configuracion para testnet.") 
+            exit(1)
     else:
         BIP44 = "m/44'/0'/0'/0/0"
 
@@ -96,20 +104,19 @@ def main():
         print("Secreto: "+secreto)
         print("A mnemonico: "+str(entropiaAmnemonico))
 
-
-    #direccion = dict{"xprv", "xpub", "ec", "wif", "ec_pub", "address"}
-#    arbol=dict()
-#    arbol={'E':"",'mnemonico':"",'contrasena':"",'seed':"",'esquema':"",'m':'', 'M':'','xpriv':[], 'xpub':[], 'pagos':[]}
-#    direccion = dict() # Definir variable tipo diccionario
-#    direccion={'xprv':"", 'xpub':"", 'ec':"", 'wif':"", 'ec_pub':"", 'address_p2pkh':""}
-#
-#    procesar_parametros()
-#    derivacion(semilla, esquema, secreto, entropiaAmnemonico)
-
-    print("=====================================")
-    carteraA=cartera(semilla, esquema, secreto, entropiaAmnemonico, args.testnet)
-    carteraA.print_consola()
-    print("=====================================")
+    if args.old:
+        #direccion=dict{"xprv", "xpub", "ec", "wif", "ec_pub", "address"}
+        arbol=dict()
+        arbol={'E':"",'mnemonico':"",'contrasena':"",'seed':"",'esquema':"",'m':'', 'M':'','xpriv':[], 'xpub':[], 'pagos':[]}
+        direccion = dict() # Definir variable tipo diccionario
+        direccion={'xprv':"", 'xpub':"", 'ec':"", 'wif':"", 'ec_pub':"", 'address_p2pkh':""}
+        #procesar_parametros()
+        derivacion(semilla, esquema, secreto, entropiaAmnemonico)
+    else:
+        print("=====================================")
+        carteraA=cartera(semilla, esquema, secreto, entropiaAmnemonico, args.testnet)
+        carteraA.print_consola()
+        print("=====================================")
 
 
 
@@ -124,9 +131,8 @@ class cartera:
     esquema="m/44'/0'/0'/0/0"    # Esquema de derivacion por defecto 
     esquema_derivacion=[] # ["m","0'",...]
     esquema_pagos=[] # [ini, fin]
-#    master_node='' # "m" en la documentacion
     HDxp=[]  # almacena [xpriv, xpub] de un determinado nivel. 
-    pagos=[]
+    pagos=[] # [[HD, ,...],[HD, ,...],[HD, ,...],...]
     testnet=False
 
     """
@@ -143,14 +149,14 @@ class cartera:
         """Inicializa el objeto. Si entropia contiene dato se despliega la derivacion.
             self.hd_new       ="hd-new --version 70615956 "
             self.hd_public    ="hd-public --config test.cfg "  #no funciona con --version 70617039
-            self.hd_to_ec     ="hd-to-ec --config test.cfg "
+            self.hd_to_ec     ="hd-to-ec --config test.cfg "  # FICHERO_CONFIGURACION_TESTNET
             self.ec_to_wif    ="ec-to-wif --version 239 " # (-u)
             self.ec_to_address="ec-to-address --version 111 "
         """
         self.testnet=testnet
         if (self.testnet):
             self.hd_new       ="hd-new --version 70615956 "
-            self.hd_public    ="hd-public --config test.cfg "  #no funciona con --version 70617039
+            self.hd_public    ="hd-public --config " + FICHERO_CONFIGURACION_TESTNET   #no funciona con --version 70617039
         else:
             self.hd_new       ="hd-new " # 76066276, 049d7878 to produce a "yprv" prefix. Testnet uses 0x044a5262 "upub" and 0x044a4e28 "uprv."
             self.hd_public    ="hd-public "
@@ -162,24 +168,41 @@ class cartera:
 
         if (entropia): # Si se inicializa con un valor de entropia desarrollamos
             self.desplegar_seed(entropia,entropiaAmnemonico) 
-            # Y continuamos descendiendo
-            for indice in self.esquema_derivacion[:]: # El ultimo se trabaja de manera especial
-                indice.strip() # Limpiar espacio en blanco
-                if "'" in indice:
-                    parametro_dureza=" --hard "
-                else:
-                    parametro_dureza=""
+            self.desplegar_HD()
 
-                # La clave identificada como m o M es especial.
-                if indice == "m":
-                    self.HDxp.append(self.semilla[self.indice_m : self.indice_m+2])
-                    #self.HDxp.append([self.semilla[self.indice_m], self.semilla[self.indice_m+1])
-                    #xpub = (os.popen("bx hd-public  -i %s %s %s " %(indice, parametro_dureza, origen)).read()).rstrip("\n")
-                    continue
-                else:
-                    pass
 
-                self.desarrollo_hd(self.HDxp[-1][0], indice.strip("'"), parametro_dureza)
+    def desplegar_HD(self):
+        # Y continuamos descendiendo
+        ultima_derivacion = len(self.esquema_derivacion)
+        n_deriva=0
+        for indice in self.esquema_derivacion[:]: # El ultimo se trabaja de manera especial
+            n_deriva += 1
+            indice=indice.strip() # Limpiar espacio en blanco
+            if "'" in indice:
+                parametro_dureza=" --hard "
+            else:
+                parametro_dureza=""
+            indice=indice.strip("'") # Limpiar
+
+            # HDxp=[]  # almacena [xpriv, xpub] de un determinado nivel.
+            # pagos=[] # [[HD, ,...],[HD, ,...],[HD, ,...],...]
+            # La clave identificada como m o M es especial.
+            if indice == "m":
+                self.HDxp.append(self.semilla[self.indice_m : self.indice_m+2])
+                continue
+            else:
+                pass
+
+            siguienteHD = lambda HDpadre,_indice_ : self.desarrollo_hd(HDpadre, _indice_, parametro_dureza)
+            if n_deriva < ultima_derivacion:
+                self.HDxp.append(siguienteHD(self.HDxp[-1][0], indice))  #([xprv, xpub])
+            else: # Si quiero generar varias direcciones de pago lo indico los valores inicial y final: i,j
+                finales_derivacion =  indice.split(",")  #(self.esquema_derivacion[-1].strip("'")).split(",")
+                # Los finales los guardo en su sitio. 
+                for i in finales_derivacion:
+                    temp_HDsiguiente = siguienteHD(self.HDxp[-1][0],i)[0]   # , i, self.testnet)
+                    temp_pago = direccion_pago(temp_HDsiguiente, i, self.testnet)
+                    self.pagos.append(temp_pago)
 
 
 
@@ -218,33 +241,28 @@ class cartera:
             self.semilla[j+1]=lderivacion[j](self.semilla[j])
 
 
-
     def desarrollo_hd(self, origen, indice, parametro_dureza=""):
         xprv = (os.popen("bx hd-private -i %s %s %s " %(indice, parametro_dureza, origen)).read()).rstrip("\n")
         xpub = (os.popen("bx hd-public  -i %s %s %s " %(indice, parametro_dureza, origen)).read()).rstrip("\n")
-        self.HDxp.append([xprv, xpub])
-
+        return [xprv, xpub]
 
 
     def arbol(self, seed, esquema ):
         pass
 
 
-
     def pago(self, xprv):
         pass
 
 
-
-    def print_consola(self):
+    def print_consola(self, pagos=True):
         print("Entropia  : " + self.semilla[0])
         print("mnemonico : " + self.semilla[1])
         print("Seed      : " + self.semilla[2])
         print("Esquema   : " + self.esquema)
-        print("m (HD prv): " + self.semilla[3])
-        print("M (HD pub): " + self.semilla[4])
+        #print("m (HD prv): " + self.semilla[3])
+        #print("M (HD pub): " + self.semilla[4])
 
-        print("---- Depura ----")
         i=0
         for HD in self.HDxp :
             try :
@@ -255,6 +273,9 @@ class cartera:
             except:
                 print("Error. Nos salimos del array HDxp.", sys.exc_info()[0])
             i+=1
+        if pagos:
+            for p in self.pagos:
+                p.print_consola()
 
 
 ########################################################################################
@@ -263,33 +284,45 @@ class direccion_pago(object):
     Para la version Testnet, asumimos que existe el fichero test.cfg con la configuracion necesaria. 
     ATENCION: No realizo control de esistencia del fichero. 
     """
+    indice=0 # Indice que ha generado la xprv. 
     xprv=""
     xpub=""
     ec=""
     wif=""
     ec_pub=""
     address_p2pkh=""
+    testnet=""
+    #hd_new="hd-new "
+    hd_public="hd-public "
+    hd_to_ec="hd-to-ec "
+    ec_to_wif="ec-to-wif "
+    ec_to_address="ec-to-address "
+#mas:
+    wif_to_ec="wif-to-ec "
 
-
-    def __init__(self, privada, testnet=False):
+    def __init__(self, privada, indice, testnet=False):
+        self.indice = indice
         self.xprv = privada
-        if (testnet):
+        self.testnet = testnet
+        if (self.testnet):
             #self.hd_new       ="hd-new --version 70615956 "
             self.hd_public    ="hd-public --config test.cfg "  #no funciona con --version 70617039
             self.hd_to_ec     ="hd-to-ec --config test.cfg "
             self.ec_to_wif    ="ec-to-wif --version 239 " # (-u)
             self.ec_to_address="ec-to-address --version 111 "
+            wif_to_ec         = "wif-to-ec --config test.cfg "
         else:
             #self.hd_new       ="hd-new "
             self.hd_public    ="hd-public "
             self.hd_to_ec     ="hd-to-ec "
             self.ec_to_wif    ="ec-to-wif " # (-u)
             self.ec_to_address="ec-to-address "
+            wif_to_ec         = "wif-to-ec "
 
-        self.deriva()
+        self.deriva(self.xprv, "xprv")
 
 
-    def deriva(self):
+    def deriva(self, origen, tipo):
         """
         derivar las direcciones de pago finales a partir de una hd xprv.
             - Clave privada (XPrv) + Matematica de curva eliptica (EC) = Clave publica (XPub)
@@ -304,13 +337,49 @@ class direccion_pago(object):
             <ec_pub> =  bx wif-to-public <wif>
             <address_p2pkh>  = bx ec-to-address <ec_pub>
         """
-        self.xpub         =(os.popen("bx " + hd_public + (self.xprv)).read()).rstrip("\n")
-        self.ec           =(os.popen("bx "+ hd_to_ec + self.xprv).read()).rstrip("\n")
-        self.wif          =(os.popen("bx "+ ec_to_wif + self.ec).read()).rstrip("\n")
-        self.ec_pub       =(os.popen("bx wif-to-public " + self.wif).read()).rstrip("\n")
-        self.address_p2pkh=(os.popen("bx "+ ec_to_address + self.ec_pub).read()).rstrip("\n")
+        secuencia={"xprv":0, "ec":2, "wif":3, "ec_pub":4}
+        temp_camino=["", "", "", "", "", ""] # 6 campos: xprv - [xpub] - ec - wif - ec_pub - address_p2pkh
+
+#        lde=[lambda :(os.popen("bx " + self.hd_public     + temp_camino[0]).read()).rstrip("\n")]
+#        temp_temp = lde[0]()
+
+        if tipo == "wif" :
+            tipo = "ec"
+            origen = (os.popen("bx " + wif-to-ec + origen).read()).rstrip("\n")
+
+        temp_camino[secuencia[tipo]]=origen
+
+        lde=[lambda :(os.popen("bx " + self.hd_public     + temp_camino[0]).read()).rstrip("\n")]
+        temp_temp = lde[0]()
+
+        lderivacion=[lambda a: (os.popen("bx " + self.hd_public     + temp_camino[0]).read()).rstrip("\n"),\
+                     lambda a: (os.popen("bx " + self.hd_to_ec      + temp_camino[0]).read()).rstrip("\n"),\
+                     lambda a: (os.popen("bx " + self.ec_to_wif     + temp_camino[2]).read()).rstrip("\n"),\
+                     lambda a: (os.popen("bx wif-to-public "        + temp_camino[3]).read()).rstrip("\n"),\
+                     lambda a: (os.popen("bx " + self.ec_to_address + temp_camino[4]).read()).rstrip("\n"),\
+                    ]
+
+        for j in range(secuencia[tipo],len(lderivacion)):
+            temp_camino[j+1] = (lderivacion[j])(0)
+
+        self.xprv=temp_camino[0]
+        self.xpub=temp_camino[1]
+        self.ec=temp_camino[2]
+        self.wif=temp_camino[3]
+        self.ec_pub=temp_camino[4]
+        self.address_p2pkh=temp_camino[5]
 
 
+    def print_consola(self):
+        print("\n-%5s: %s" %(self.indice, self.xprv))
+        try:
+            print("      xpub: " + self.xpub)
+            print("   priv_ec: " + self.ec)
+            print("  priv_wif: " + self.wif)
+            print("   publ_ec: " + self.ec_pub)
+            print("addr_p2pkh: " + self.address_p2pkh)
+        except:
+            _Depurame_(376, ["Error en 'pago.print_consola'"])
 
 
 
@@ -364,11 +433,16 @@ def derivacion(entropia, esquema="m/44'/0'/0'/0/0", contrasena="", entropiaAmnem
     Direcionesdepago(): derivacion de las claves publicas a partir de XPrv,
          hasta la direccion de cartera.
     """
-    global hd_new
-    global hd_public
-    global hd_to_ec
-    global ec_to_wif
-    global ec_to_address
+#    global hd_new
+#    global hd_public
+#    global hd_to_ec
+#    global ec_to_wif
+#    global ec_to_address
+    hd_new=" hd-new "
+    hd_public=" hd-public "
+    #hd_to_ec="hd-to-ec "
+    #ec_to_wif="ec-to-wif "
+    #ec_to_address="ec-to-address "
 
     arbol={'E':"",'mnemonico':"",'contrasena':contrasena,'seed':"",'esquema':esquema,'m':'', 'M':'','xpriv':[], 'xpub':[], 'pagos':[]}
     #mnemonico=""
@@ -465,11 +539,16 @@ def direccionesdepago(xprv_fin):
       <ec_pub> =  bx wif-to-public <wif>
       <address_p2pkh>  = bx ec-to-address <ec_pub>
     """
-    global hd_new
-    global hd_public
-    global hd_to_ec
-    global ec_to_wif
-    global ec_to_address
+#    global hd_new
+#    global hd_public
+#    global hd_to_ec
+#    global ec_to_wif
+#    global ec_to_address
+    hd_new=" hd-new "
+    hd_public=" hd-public "
+    hd_to_ec=" hd-to-ec "
+    ec_to_wif=" ec-to-wif "
+    ec_to_address=" ec-to-address "
 
     # Limpiar direccion en cada llamada
     direccion={'xprv':"", 'xpub':"", 'ec':"", 'wif':"", 'ec_pub':"", 'address_p2pkh':""}
@@ -513,6 +592,18 @@ def DesdeWif(wif):
 
 
 ########################################################################################
+#depuracion
+def _Depurame_(ref, datos, finalizar=False):
+    """
+    Uso:
+         #_Depurame_(numero,[dato1, dato2,...])
+    """
+    cadena = "][".join([str(elemento) for elemento in datos])
+    print("* Depuracion ref-%d: [%s]" %(ref, cadena))
+    if finalizar:
+        print ("=== Fin del programa. Se ha llamado a depuracion con orden de finalizar ===")
+        exit(1)
+
 ### Llamar a funcion principal.###
 if __name__ == "__main__":
     #import sys
