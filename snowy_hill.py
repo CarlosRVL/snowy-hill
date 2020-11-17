@@ -38,7 +38,7 @@ from subprocess import Popen, PIPE
 VERBOSE=False
 DEPURA=False
 FICHERO_CONFIGURACION_TESTNET="test.cfg"
-FICHERO_CONFIGURACION_MAINNET="bxcfg"
+FICHERO_CONFIGURACION_MAINNET="bx.cfg"
 
 ### Funciones: ###
 
@@ -84,13 +84,17 @@ def main():
         secreto=""
 
     if (args.testnet):  #comprobar que existe fichero de configuracion para testnet. 
-        if path.exists(FICHERO_CONFIGURACION_TESTNET):
+        if os.path.exists(FICHERO_CONFIGURACION_TESTNET):
             BIP44 = "m/44'/1'/0'/0/0"
         else:
             print ("Error: no existe el fichero de configuracion para testnet.") 
             exit(1)
     else:
-        BIP44 = "m/44'/0'/0'/0/0"
+        if os.path.exists(FICHERO_CONFIGURACION_MAINNET):
+            BIP44 = "m/44'/0'/0'/0/0"
+        else:
+            print ("Error: no existe el fichero de configuracion para mainnet.")
+            exit(1)
 
     if args.esquema:
         esquema = args.esquema
@@ -199,7 +203,7 @@ class cartera:
             else: # Si quiero generar varias direcciones de pago lo indico los valores inicial y final: i,j
                 finales_derivacion =  indice.split(",")  #(self.esquema_derivacion[-1].strip("'")).split(",")
                 # Los finales los guardo en su sitio. 
-                for i in finales_derivacion:
+                for i in range(int(finales_derivacion[0]), int(finales_derivacion[1])+1):
                     temp_HDsiguiente = siguienteHD(self.HDxp[-1][0],i)[0]   # , i, self.testnet)
                     temp_pago = direccion_pago(temp_HDsiguiente, i, self.testnet)
                     self.pagos.append(temp_pago)
@@ -373,11 +377,11 @@ class direccion_pago(object):
     def print_consola(self):
         print("\n-%5s: %s" %(self.indice, self.xprv))
         try:
-            print("      xpub: " + self.xpub)
-            print("   priv_ec: " + self.ec)
-            print("  priv_wif: " + self.wif)
-            print("   publ_ec: " + self.ec_pub)
-            print("addr_p2pkh: " + self.address_p2pkh)
+            print("  xpub: " + self.xpub)
+            print("prv_ec: " + self.ec)
+            print("   wif: " + self.wif)
+            print("pub_ec: " + self.ec_pub)
+            print(" p2pkh: " + self.address_p2pkh)
         except:
             _Depurame_(376, ["Error en 'pago.print_consola'"])
 
