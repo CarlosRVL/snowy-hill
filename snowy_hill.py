@@ -109,12 +109,10 @@ def main():
         print("A mnemonico: "+str(entropiaAmnemonico))
 
     if args.old:
-        #direccion=dict{"xprv", "xpub", "ec", "wif", "ec_pub", "address"}
         arbol=dict()
         arbol={'E':"",'mnemonico':"",'contrasena':"",'seed':"",'esquema':"",'m':'', 'M':'','xpriv':[], 'xpub':[], 'pagos':[]}
         direccion = dict() # Definir variable tipo diccionario
         direccion={'xprv':"", 'xpub':"", 'ec':"", 'wif':"", 'ec_pub':"", 'address_p2pkh':""}
-        #procesar_parametros()
         derivacion(semilla, esquema, secreto, entropiaAmnemonico)
     else:
         print("=====================================")
@@ -264,8 +262,6 @@ class cartera:
         print("mnemonico : " + self.semilla[1])
         print("Seed      : " + self.semilla[2])
         print("Esquema   : " + self.esquema)
-        #print("m (HD prv): " + self.semilla[3])
-        #print("M (HD pub): " + self.semilla[4])
 
         i=0
         for HD in self.HDxp :
@@ -301,7 +297,7 @@ class direccion_pago(object):
     hd_to_ec="hd-to-ec "
     ec_to_wif="ec-to-wif "
     ec_to_address="ec-to-address "
-#mas:
+    #mas:
     wif_to_ec="wif-to-ec "
 
     def __init__(self, privada, indice, testnet=False):
@@ -344,17 +340,14 @@ class direccion_pago(object):
         secuencia={"xprv":0, "ec":2, "wif":3, "ec_pub":4}
         temp_camino=["", "", "", "", "", ""] # 6 campos: xprv - [xpub] - ec - wif - ec_pub - address_p2pkh
 
-#        lde=[lambda :(os.popen("bx " + self.hd_public     + temp_camino[0]).read()).rstrip("\n")]
-#        temp_temp = lde[0]()
-
         if tipo == "wif" :
             tipo = "ec"
             origen = (os.popen("bx " + wif-to-ec + origen).read()).rstrip("\n")
 
         temp_camino[secuencia[tipo]]=origen
 
-        lde=[lambda :(os.popen("bx " + self.hd_public     + temp_camino[0]).read()).rstrip("\n")]
-        temp_temp = lde[0]()
+        #lde=[lambda :(os.popen("bx " + self.hd_public     + temp_camino[0]).read()).rstrip("\n")]
+        #temp_temp = lde[0]()
 
         lderivacion=[lambda a: (os.popen("bx " + self.hd_public     + temp_camino[0]).read()).rstrip("\n"),\
                      lambda a: (os.popen("bx " + self.hd_to_ec      + temp_camino[0]).read()).rstrip("\n"),\
@@ -437,19 +430,10 @@ def derivacion(entropia, esquema="m/44'/0'/0'/0/0", contrasena="", entropiaAmnem
     Direcionesdepago(): derivacion de las claves publicas a partir de XPrv,
          hasta la direccion de cartera.
     """
-#    global hd_new
-#    global hd_public
-#    global hd_to_ec
-#    global ec_to_wif
-#    global ec_to_address
     hd_new=" hd-new "
     hd_public=" hd-public "
-    #hd_to_ec="hd-to-ec "
-    #ec_to_wif="ec-to-wif "
-    #ec_to_address="ec-to-address "
 
     arbol={'E':"",'mnemonico':"",'contrasena':contrasena,'seed':"",'esquema':esquema,'m':'', 'M':'','xpriv':[], 'xpub':[], 'pagos':[]}
-    #mnemonico=""
     frase = entropia.split() # puede ser una frase o una semilla, decision a continuacion
     # Casos: E, mnemonico, seed
     if(entropiaAmnemonico): # Si es true se debe generar una frase a partir de la entropia
@@ -470,21 +454,19 @@ def derivacion(entropia, esquema="m/44'/0'/0'/0/0", contrasena="", entropiaAmnem
     print("Seed      : " + arbol["seed"])
     print("Esquema   : " + arbol["esquema"])
 
-    #arbol={'esquema':esquema,'contrasena':contrasena,
-    # ... 'E':"",'mnemonico':"",'seed':"",'m':'','M':'','xpriv':[],'xpub':[],'pagos':[]}
     deriva = arbol["esquema"].split("/")
     temporal=arbol["seed"]
     for x in deriva[:-1]: #ultima especial
         x.strip() #Eliminar blancos
 
         # La claves pueden ser duras o ¿blandas?. Las duras (') no permiten deribar de la publica, 
-	# las "blandas" permiten una deribar publicas de las publicas (tengo que estudiarlo mejor)
+        # las "blandas" permiten una deribar publicas de las publicas (tengo que estudiarlo mejor)
         if "'" in x:
             duro=" --hard "
         else:
             duro=""
 
-	# La clave identificada como m o M es especial. 
+	    # La clave identificada como m o M es especial. 
         if x == "m":
             arbol["m"]=(os.popen("bx"+ hd_new + arbol["seed"]).read()).rstrip("\n")
             temporal = arbol["m"]
@@ -526,7 +508,6 @@ def derivacion(entropia, esquema="m/44'/0'/0'/0/0", contrasena="", entropiaAmnem
 
 
 
-
 ########################################################################################
 def direccionesdepago(xprv_fin):
     """
@@ -543,11 +524,6 @@ def direccionesdepago(xprv_fin):
       <ec_pub> =  bx wif-to-public <wif>
       <address_p2pkh>  = bx ec-to-address <ec_pub>
     """
-#    global hd_new
-#    global hd_public
-#    global hd_to_ec
-#    global ec_to_wif
-#    global ec_to_address
     hd_new=" hd-new "
     hd_public=" hd-public "
     hd_to_ec=" hd-to-ec "
@@ -580,10 +556,8 @@ def DesdeWif(wif):
     if(len(wif)<1):
         return 0
     direccion = dict()
-    #direccion["xprv"]=xprv_fin
     direccion["wif"]=wif
     direccion["ec"]=(os.popen("bx wif-to-ec "+ wif).read()).rstrip("\n")
-    #direccion["wif"]=(os.popen("bx"+ ec_to_wif + direccion["ec"]).read()).rstrip("\n")
     direccion["ec_pub"]=(os.popen("bx wif-to-public " + direccion["wif"]).read()).rstrip("\n")
     direccion["address_p2pkh"]=(os.popen("bx"+ ec_to_address + direccion["ec_pub"]).read()).rstrip("\n")
     return direccion
@@ -610,8 +584,6 @@ def _Depurame_(ref, datos, finalizar=False):
 
 ### Llamar a funcion principal.###
 if __name__ == "__main__":
-    #import sys
-    #    fib(int(sys.argv[1]))
     main()
 
 
