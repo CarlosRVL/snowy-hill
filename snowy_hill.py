@@ -201,7 +201,8 @@ class cartera:
             else: # Si quiero generar varias direcciones de pago lo indico los valores inicial y final: i,j
                 finales_derivacion =  indice.split(",")  #(self.esquema_derivacion[-1].strip("'")).split(",")
                 # Los finales los guardo en su sitio. 
-                for i in range(int(finales_derivacion[0]), int(finales_derivacion[1])+1):
+                for i in range(int(finales_derivacion[0]), int(finales_derivacion[-1])+1):
+                    # en el rango se pone +1 al segundo extremo porque range queda por debajo. 
                     temp_HDsiguiente = siguienteHD(self.HDxp[-1][0],i)[0]   # , i, self.testnet)
                     temp_pago = direccion_pago(temp_HDsiguiente, i, self.testnet)
                     self.pagos.append(temp_pago)
