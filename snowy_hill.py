@@ -379,6 +379,32 @@ class direccion_pago(object):
         except:
             _Depurame_(376, ["Error en 'pago.print_consola'"])
 
+    def print_p2pkh(self):
+        try:
+            print("%s:%s" %(self.indice, self.address_p2pkh))
+        except:
+            _Depurame_(376, ["Error en 'pago.print_p2pkh'"])
+
+    def cadena_consola(self):
+        cadena=("\n-%5s: %s" %(self.indice, self.xprv))
+        try:
+            cadena+=("\n  xpub: " + self.xpub)
+            cadena+=("prv_ec: " + self.ec)
+            cadena+=("   wif: " + self.wif)
+            cadena+=("pub_ec: " + self.ec_pub)
+            cadena+=(" p2pkh: " + self.address_p2pkh)
+            return cadena
+        except:
+            _Depurame_(376, ["Error en 'pago.print_consola'"])
+
+    def cadena_p2pkh(self):
+        cadena=""
+        try:
+            cadena=("%s:%s" %(self.indice, self.address_p2pkh))
+            return cadena
+        except:
+            _Depurame_(376, ["Error en 'pago.print_p2pkh'"])
+
 
 
 ########################################################################################
