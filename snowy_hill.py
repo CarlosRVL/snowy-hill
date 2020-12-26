@@ -27,6 +27,17 @@
 #BIP44 = "m/44'/0'/0'/0/0"
 #BIP44T = "m/44'/1'/0'/0/0"
 #BIP32 = "m/0/0"
+# Ejemplos manual:
+#   Derivacion de publicas
+# xpv=tprv8fPDJN9UQqg6pFsQsrVxTwHZmXLvHpfGGcsCA9rtnatUgVtBKxhtFeqiyaYKSWydunKpjhvgJf6PwTwgirwuCbFq8YKgpQiaVJf3JCrNmkR; bx hd-to-public --version 70617039 $xpv| bx hd-public -c test.cfg |bx hd-public -i 1 -c test.cfg           | bx hd-to-ec -c test.cfg|bx ec-to-address -v 111
+#   Derivacion general
+# E=00000000000000000000000000000000; bx mnemonic-new $E| bx mnemonic-to-seed| bx hd-new --version 70615956| bx hd-private -i 44 -d|\
+#      bx hd-private -i 1 -d|bx hd-private -i 0 -d| bx hd-private -i 0 | bx hd-private -i 0|\
+#      bx hd-to-ec --config test.cfg| bx ec-to-wif --version 239|bx wif-to-public -c test.cfg |bx ec-to-address --version 111 
+#    = mkpZhYtJu2r87Js3pDiWJDmPte2NRZ8bJV
+# E=00000000000000000000000000000000; bx mnemonic-new $E| bx mnemonic-to-seed| bx hd-new --version 70615956| bx hd-private -i 44 -d|\
+#      bx hd-private -i 1 -d|bx hd-private -i 0 -d| bx hd-private -i 0 | bx hd-private -i 0|\
+#      bx hd-to-ec --config test.cfg|bx ec-to-public -c test.cfg
 ########################################################################################
 
 import os # para poder ejecutar comandos de shell
@@ -39,6 +50,8 @@ VERBOSE=False
 DEPURA=False
 FICHERO_CONFIGURACION_TESTNET="test.cfg"
 FICHERO_CONFIGURACION_MAINNET="bx.cfg"
+TESTNET=False
+MAINNET=True # es redundante, lo hago para mejor lectura. 
 
 ### Funciones: ###
 
@@ -46,7 +59,7 @@ FICHERO_CONFIGURACION_MAINNET="bx.cfg"
 def main():
     'Funcion inicial.'
     global VERBOSE
-    
+
     # Comprobar que existe el programa bx
     try:
         Popen('bx', stdout=PIPE, stderr=PIPE)
@@ -64,7 +77,10 @@ def main():
     parser.add_argument("-e", "--esquema", help="Esquema de derivación. eje: m/44'/0'/0'/0/0")
     parser.add_argument("-s", "--secreto", help="Contraseña para añadir al mnemonico")
     parser.add_argument("-j", "--ejemplo", help="La cadena <entropia> se expandira (x32) y se utilizara esquema BIP44.", action="store_true")
+    parser.add_argument("-p", "--payfile", help="Nombre del archivo en el que guardar las direcciones de pago.")
     parser.add_argument("-o", "--old", help="Ejecutar la version antigua.", action="store_true")
+    parser.add_argument("-c", "--corto", help="Mostrar salida corta.", action="store_true")
+    parser.add_argument("-cc", "--mascorto", help="Mostrar salida mas corta.", action="store_true")
     parser.add_argument("entropia", help="Origen de la derivación (semilla (E), mnemonico, seed, xpriv...)")
     args = parser.parse_args()
 
@@ -83,7 +99,9 @@ def main():
     else:
         secreto=""
 
-    if (args.testnet):  #comprobar que existe fichero de configuracion para testnet. 
+    TESTNET=args.testnet
+    MAINNET=not args.testnet
+    if (TESTNET):  #comprobar que existe fichero de configuracion para testnet. 
         if os.path.exists(FICHERO_CONFIGURACION_TESTNET):
             BIP44 = "m/44'/1'/0'/0/0"
         else:
@@ -97,7 +115,15 @@ def main():
             exit(1)
 
     if args.esquema:
-        esquema = args.esquema
+        # se permite "BIP44.n-m"
+        if "." in args.esquema:
+            [args.esquema,rangoPagos]=args.esquema.split(".")
+            BIP44 = BIP44[:-1] + rangoPagos
+        if args.esquema=="BIP44":
+            esquema=BIP44
+        else:
+            print ("Cuidado: introducir un esquema manualmente o distinto a BIP44 puede dar un resultado erroneo")
+            esquema = args.esquema
     else: 
         esquema=BIP44
 
@@ -115,25 +141,38 @@ def main():
         direccion={'xprv':"", 'xpub':"", 'ec':"", 'wif':"", 'ec_pub':"", 'address_p2pkh':""}
         derivacion(semilla, esquema, secreto, entropiaAmnemonico)
     else:
-        print("=====================================")
-        carteraA=cartera(semilla, esquema, secreto, entropiaAmnemonico, args.testnet)
-        carteraA.print_consola()
-        print("=====================================")
+        print("#=====================================")
+        mycartera=cartera(semilla, esquema, secreto, entropiaAmnemonico, TESTNET)
+        if args.mascorto:
+            mycartera.print_massencilla()
+        elif args.corto:
+            mycartera.print_sencilla()
+        else:
+	        mycartera.print_consola()
+        print("#=====================================")
+        # Volcado de pagos a fichero
+        if args.payfile:
+            ficheropagos = args.payfile
+            try:
+                with open(ficheropagos, 'a') as f:
+                    f.write("# %s\n%s" %(mycartera.esquema, mycartera.cadena_pagos()))
+            except:
+                print("Error al tratar de escribir en fichero (%s)" %(ficheropagos))
 
 
 
 ########################################################################################
 class cartera:
     """
-    Realiza la derivacion de una familia de direcciones a raiz de una semilla. 
-    Se puede iniciar la derivacion a varias alturas. 
+    Realiza la derivacion de una familia de direcciones a raiz de una semilla.
+    Se puede iniciar la derivacion a varias alturas.
     """
     semilla=['', '', '', '', ''] # E, Mnemon, Seed, m, M
-    indice_m=3 # posicion de m en semilla[]
-    esquema="m/44'/0'/0'/0/0"    # Esquema de derivacion por defecto 
-    esquema_derivacion=[] # ["m","0'",...]
+    indice_m=3 # posicion de m en semilla[]¿?
+    esquema=""  #Esquema de derivacion en una sola cadena
+    esquema_derivacion=[] # ["m","0'",...] # Esquema separado.
     esquema_pagos=[] # [ini, fin]
-    HDxp=[]  # almacena [xpriv, xpub] de un determinado nivel. 
+    HDxp=[]  # almacena [xpriv, xpub] de un determinado nivel
     pagos=[] # [[HD, ,...],[HD, ,...],[HD, ,...],...]
     testnet=False
 
@@ -143,6 +182,7 @@ class cartera:
     """
     hd_new="hd-new "
     hd_public="hd-public "
+    hd_to_public="hd-to-public "
     #hd_to_ec="hd-to-ec "
     #ec_to_wif="ec-to-wif "
     #ec_to_address="ec-to-address "
@@ -150,7 +190,7 @@ class cartera:
     def __init__(self, entropia="", esquema="", contrasena="", entropiaAmnemonico=False, testnet=False):
         """Inicializa el objeto. Si entropia contiene dato se despliega la derivacion.
             self.hd_new       ="hd-new --version 70615956 "
-            self.hd_public    ="hd-public --config test.cfg "  #no funciona con --version 70617039
+            self.hd_to_public ="hd-to-public --config test.cfg "  #no funciona con --version 70617039
             self.hd_to_ec     ="hd-to-ec --config test.cfg "  # FICHERO_CONFIGURACION_TESTNET
             self.ec_to_wif    ="ec-to-wif --version 239 " # (-u)
             self.ec_to_address="ec-to-address --version 111 "
@@ -158,19 +198,57 @@ class cartera:
         self.testnet=testnet
         if (self.testnet):
             self.hd_new       ="hd-new --version 70615956 "
-            self.hd_public    ="hd-public --config " + FICHERO_CONFIGURACION_TESTNET   #no funciona con --version 70617039
+            self.hd_public    ="hd-public --config " + FICHERO_CONFIGURACION_TESTNET + " "  #no funciona con --version 70617039
+            self.hd_to_public ="hd-to-public --version 70617039 "
+#            self.hd_to_public ="hd-to-public --config " + FICHERO_CONFIGURACION_TESTNET + " " #
         else:
             self.hd_new       ="hd-new " # 76066276, 049d7878 to produce a "yprv" prefix. Testnet uses 0x044a5262 "upub" and 0x044a4e28 "uprv."
             self.hd_public    ="hd-public "
+            self.hd_to_public ="hd-to-public "
 
         if (esquema):
             self.esquema = esquema
-        self.esquema_derivacion = self.esquema.split("/")
+            self.esquema_derivacion = self.esquema.split("/")
         self.contrasena=contrasena
 
         if (entropia): # Si se inicializa con un valor de entropia desarrollamos
             self.desplegar_seed(entropia,entropiaAmnemonico) 
             self.desplegar_HD()
+
+
+    def desplegar_seed(self, entropia, entropiaAmnemonico=False):
+        """
+        La familia de claves se deriva a partir de la semilla (seed) con un cierto formato.
+        Pero se puede iniciar la secuencia antes: E -> mnemonico [+ passw] -> seed
+        Esta clase permite derivar desde cualquier posicion. Para ello el parametro
+        <entropia> se matiza segun:
+        Si <entropiaAmneminico> es True: representa el valor E
+        Sino SI contiene mas de una cadena: se trata de una frase mnemonica
+        En otro caso: representa seed
+        ... PROPUESTA: SI NO FACILITA <ESQUEMA> SOLO SE DESARROLLA HASTA EL SEED. 
+        """
+
+        if(entropiaAmnemonico): # Si es true se debe generar una frase a partir de la entropia
+            i=0
+        else:
+            frase = entropia.split() # puede ser una frase o una semilla, decision a continuacion
+            if(len(frase)>1): #Si contiene mas de una palabra es un mnemonico
+                i=1
+            else: # en otro caso <entropia> contiene el Seed. No contamos con el mnemonico.
+                i=2
+        self.semilla[i]=entropia # Almacenar entropia en la posicion adecuada.
+        parametro_contrasena = " -p \"%s\" " %(self.contrasena)
+
+        # Almaceno las funciones a utilizar en la derivacion.
+        lderivacion=[lambda E: (os.popen("bx mnemonic-new " + E).read()).rstrip("\n"),\
+                 lambda Mn:(os.popen("bx mnemonic-to-seed " + Mn + parametro_contrasena).read()).rstrip("\n"),\
+                lambda S: (os.popen("bx "+ self.hd_new + S).read()).rstrip("\n") ,\
+#                lambda Pr:(os.popen("bx hd-private -i %s %s %s " %(indice, duro, Pr)).read()).rstrip("\n"),\
+                lambda m:(os.popen("bx " + self.hd_to_public + m).read()).rstrip("\n"),\
+                ]
+
+        for j in range(i,len(lderivacion)):
+            self.semilla[j+1]=lderivacion[j](self.semilla[j])
 
 
     def desplegar_HD(self):
@@ -200,53 +278,17 @@ class cartera:
                 self.HDxp.append(siguienteHD(self.HDxp[-1][0], indice))  #([xprv, xpub])
             else: # Si quiero generar varias direcciones de pago lo indico los valores inicial y final: i,j
                 finales_derivacion =  indice.split(",")  #(self.esquema_derivacion[-1].strip("'")).split(",")
-                # Los finales los guardo en su sitio. 
+                # Los finales los guardo en su sitio.
                 for i in range(int(finales_derivacion[0]), int(finales_derivacion[-1])+1):
-                    # en el rango se pone +1 al segundo extremo porque range queda por debajo. 
+                    # en el rango se pone +1 al segundo extremo porque range queda por debajo.
                     temp_HDsiguiente = siguienteHD(self.HDxp[-1][0],i)[0]   # , i, self.testnet)
                     temp_pago = direccion_pago(temp_HDsiguiente, i, self.testnet)
                     self.pagos.append(temp_pago)
 
 
-
-    def desplegar_seed(self, entropia, entropiaAmnemonico=False):
-        """
-        La familia de claves se deriva a partir de la semilla (seed) con un cierto formato.
-        Pero se puede iniciar la secuencia antes: E -> mnemonico [+ passw] -> seed
-        Esta clase permite derivar desde cualquier posicion. Para ello el parametro
-        <entropia> se matiza segun:
-        Si <entropiaAmneminico> es True: representa el valor E
-        Sino SI contiene mas de una cadena: se trata de una frase mnemonica
-        En otro caso: representa seed
-        ... PROPUESTA: SI NO FACILITA <ESQUEMA> SOLO SE DESARROLLA HASTA EL SEED. 
-        """
-
-        if(entropiaAmnemonico): # Si es true se debe generar una frase a partir de la entropia
-            i=0
-        else:
-            frase = entropia.split() # puede ser una frase o una semilla, decision a continuacion
-            if(len(frase)>1): #Si contiene mas de una palabra es un mnemonico
-                i=1
-            else: # en otro caso <entropia> contiene el Seed. No contamos con el mnemonico.
-                i=2
-        self.semilla[i]=entropia # Almacenar entropia en la posicion adecuada.
-        parametro_contrasena = " -p \"%s\" " %(self.contrasena)
-
-        # Almaceno las funciones a utilizar en la derivacion.
-        lderivacion=[lambda E: (os.popen("bx mnemonic-new " + E).read()).rstrip("\n"),\
-                lambda Mn:(os.popen("bx mnemonic-to-seed " + Mn + parametro_contrasena).read()).rstrip("\n"),\
-                lambda S: (os.popen("bx "+ self.hd_new + S).read()).rstrip("\n") ,\
-#                lambda Pr:(os.popen("bx hd-private -i %s %s %s " %(indice, duro, Pr)).read()).rstrip("\n"),\
-#                lambda Pr:(os.popen("bx hd-public  -i %s %s %s " %(indice, duro, Pr)).read()).rstrip("\n"),\
-                ]
-
-        for j in range(i,len(lderivacion)):
-            self.semilla[j+1]=lderivacion[j](self.semilla[j])
-
-
     def desarrollo_hd(self, origen, indice, parametro_dureza=""):
         xprv = (os.popen("bx hd-private -i %s %s %s " %(indice, parametro_dureza, origen)).read()).rstrip("\n")
-        xpub = (os.popen("bx hd-public  -i %s %s %s " %(indice, parametro_dureza, origen)).read()).rstrip("\n")
+        xpub = (os.popen("bx  " + self.hd_to_public + xprv).read()).rstrip("\n")
         return [xprv, xpub]
 
 
@@ -278,6 +320,87 @@ class cartera:
             for p in self.pagos:
                 p.print_consola()
 
+    def print_sencilla(self, pagos=True):
+        print("mnemonico : " + self.semilla[1])
+        print("Seed      : " + self.semilla[2])
+        print("Esquema   : " + self.esquema)
+        print("")
+        i=0
+        for HD in self.HDxp :
+            try :
+                nivel = self.esquema_derivacion[i]
+                print ("- %4s: %s" %(nivel, HD[0])) #(self.HDxp[i])[0]))
+                if VERBOSE:
+                    print ("      - %s" %(HD[1])) #(self.HDxp[i])[1]))
+            except:
+                print("Error. Nos salimos del array HDxp.", sys.exc_info()[0])
+            i+=1
+        print("")
+        if pagos:
+            for p in self.pagos:
+                print("%s" %(p.cadena_wif()))
+                print("%s" %(p.cadena_p2pkh()))
+                print("")
+
+    def print_massencilla(self, pagos=True):
+        print("mnemonico : " + self.semilla[1])
+        print("Seed      : " + self.semilla[2])
+        print("Esquema   : " + self.esquema)
+        print("")
+        if pagos:
+            for p in self.pagos:
+                print("%s" %(p.cadena_wif()))
+                print("%s" %(p.cadena_p2pkh()))
+                print("")
+
+    def cadena_pagos(self, pagos=True):
+        cadena=""
+        for p in self.pagos:
+            cadena+=p.cadena_p2pkh()+"\n"
+        return cadena
+
+#    def print_csv_completa(self):
+#        i=0
+#        linea=""
+#
+#        cadena_encabezado= "_esquema_,_mnemonic_,_seed_"
+#        cadena_encabezado=+",_m_,_44_,_Xpub_44_,_rama01_,_Xpub_01_,_rama02_,_Xpub_02_,_rama03_,_Xpub_03_"
+#        cadena_encabezado=+",_Xpriv_pago4_01,_Xpub_pago_1,_prv_ec_1,_wif_1,_pub_ec_1,_p2pkh_1,_Xpriv_pago4_02,_Xpub_pago_2,_prv_ec_2,_wif_2,_pub_ec_2,_p2pkh_2,_Xpriv_pago4_03,_Xpub_pago_3,_prv_ec_3,_wif_3,_pub_ec_3,_p2pkh_3"
+#
+#        print(cadena_encabezado)
+#
+#        linea=linea + self.esquema
+#        linea=linea + self.semilla[1]
+#        linea=linea + self.semilla[2]
+#
+#        for p in self.pagos:
+#            i++
+#            if i>3:
+#                continue
+#            else:
+#                linea=linea+
+#                
+##                print("%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s", \
+# #                   %(self.esquema,self.semilla[1],self.semilla[2], ) )
+#
+#        i=0
+#        for HD in self.HDxp :
+#            try :
+#                nivel = self.esquema_derivacion[i]
+#                print ("- %4s: %s" %(nivel, HD[0])) #(self.HDxp[i])[0]))
+#                if VERBOSE:
+#                    print ("      - %s" %(HD[1])) #(self.HDxp[i])[1]))
+#            except:
+#                print("Error. Nos salimos del array HDxp.", sys.exc_info()[0])
+#            i+=1
+#        if pagos:
+#            for p in self.pagos:
+#                p.print_consola()
+#
+#
+
+
+
 
 ########################################################################################
 class direccion_pago(object):
@@ -294,7 +417,7 @@ class direccion_pago(object):
     address_p2pkh=""
     testnet=""
     #hd_new="hd-new "
-    hd_public="hd-public "
+    hd_to_public="hd-to-public "
     hd_to_ec="hd-to-ec "
     ec_to_wif="ec-to-wif "
     ec_to_address="ec-to-address "
@@ -307,14 +430,14 @@ class direccion_pago(object):
         self.testnet = testnet
         if (self.testnet):
             #self.hd_new       ="hd-new --version 70615956 "
-            self.hd_public    ="hd-public --config test.cfg "  #no funciona con --version 70617039
+            self.hd_to_public    ="hd-to-public --version 70617039 "
             self.hd_to_ec     ="hd-to-ec --config test.cfg "
             self.ec_to_wif    ="ec-to-wif --version 239 " # (-u)
             self.ec_to_address="ec-to-address --version 111 "
             wif_to_ec         = "wif-to-ec --config test.cfg "
         else:
             #self.hd_new       ="hd-new "
-            self.hd_public    ="hd-public "
+            self.hd_to_public    ="hd-to-public "
             self.hd_to_ec     ="hd-to-ec "
             self.ec_to_wif    ="ec-to-wif " # (-u)
             self.ec_to_address="ec-to-address "
@@ -350,7 +473,7 @@ class direccion_pago(object):
         #lde=[lambda :(os.popen("bx " + self.hd_public     + temp_camino[0]).read()).rstrip("\n")]
         #temp_temp = lde[0]()
 
-        lderivacion=[lambda a: (os.popen("bx " + self.hd_public     + temp_camino[0]).read()).rstrip("\n"),\
+        lderivacion=[lambda a: (os.popen("bx " + self.hd_to_public     + temp_camino[0]).read()).rstrip("\n"),\
                      lambda a: (os.popen("bx " + self.hd_to_ec      + temp_camino[0]).read()).rstrip("\n"),\
                      lambda a: (os.popen("bx " + self.ec_to_wif     + temp_camino[2]).read()).rstrip("\n"),\
                      lambda a: (os.popen("bx wif-to-public "        + temp_camino[3]).read()).rstrip("\n"),\
@@ -400,10 +523,18 @@ class direccion_pago(object):
     def cadena_p2pkh(self):
         cadena=""
         try:
-            cadena=("%s:%s" %(self.indice, self.address_p2pkh))
+            cadena=("pag %3s:%s" %(self.indice, self.address_p2pkh))
             return cadena
         except:
-            _Depurame_(376, ["Error en 'pago.print_p2pkh'"])
+            _Depurame_(376, ["Error en 'pago.cadena_p2pkh'"])
+
+    def cadena_wif(self):
+        cadena=""
+        try:
+            cadena=("wif %3s:%s" %(self.indice, self.wif))
+            return cadena
+        except:
+            _Depurame_(378, ["Error en 'pago.cadena_wif'"])
 
 
 
