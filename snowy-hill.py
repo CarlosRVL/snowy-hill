@@ -175,6 +175,9 @@ class cartera:
     HDxp=[]  # almacena [xpriv, xpub] de un determinado nivel
     pagos=[] # [[HD, ,...],[HD, ,...],[HD, ,...],...]
     testnet=False
+    master_finger_print=""
+    #MasterFingerPrint
+    #bx hd-new $PPP| bx hd-to-ec |bx ec-to-public| bx bitcoin160 (primeros 4 Bytes)
 
     """
      Las siguientes variables almacenan los comandos de bx, con el
@@ -200,11 +203,13 @@ class cartera:
             self.hd_new       ="hd-new --version 70615956 "
             self.hd_public    ="hd-public --config " + FICHERO_CONFIGURACION_TESTNET + " "  #no funciona con --version 70617039
             self.hd_to_public ="hd-to-public --version 70617039 "
+            self.hd_to_ec     ="hd-to-ec --config test.cfg "
 #            self.hd_to_public ="hd-to-public --config " + FICHERO_CONFIGURACION_TESTNET + " " #
         else:
             self.hd_new       ="hd-new " # 76066276, 049d7878 to produce a "yprv" prefix. Testnet uses 0x044a5262 "upub" and 0x044a4e28 "uprv."
             self.hd_public    ="hd-public "
             self.hd_to_public ="hd-to-public "
+            self.hd_to_ec     ="hd-to-ec "
 
         if (esquema):
             self.esquema = esquema
@@ -214,7 +219,7 @@ class cartera:
         if (entropia): # Si se inicializa con un valor de entropia desarrollamos
             self.desplegar_seed(entropia,entropiaAmnemonico) 
             self.desplegar_HD()
-
+            self.calculo_m_finger_p()
 
     def desplegar_seed(self, entropia, entropiaAmnemonico=False):
         """
@@ -222,7 +227,7 @@ class cartera:
         Pero se puede iniciar la secuencia antes: E -> mnemonico [+ passw] -> seed
         Esta clase permite derivar desde cualquier posicion. Para ello el parametro
         <entropia> se matiza segun:
-        Si <entropiaAmneminico> es True: representa el valor E
+        Si <entropiaAmnwmonico> es True: representa el valor E
         Sino SI contiene mas de una cadena: se trata de una frase mnemonica
         En otro caso: representa seed
         ... PROPUESTA: SI NO FACILITA <ESQUEMA> SOLO SE DESARROLLA HASTA EL SEED. 
@@ -291,20 +296,23 @@ class cartera:
         xpub = (os.popen("bx  " + self.hd_to_public + xprv).read()).rstrip("\n")
         return [xprv, xpub]
 
+    def calculo_m_finger_p(self):
+        calculo="bx " + self.hd_to_ec +" "+ self.semilla[self.indice_m] + " | bx ec-to-public | bx bitcoin160"
+        temp= (os.popen(calculo).read()).rstrip('\n')
+        self.master_finger_print=temp[0:8]
 
     def arbol(self, seed, esquema ):
         pass
 
-
     def pago(self, xprv):
         pass
-
 
     def print_consola(self, pagos=True):
         print("Entropia  : " + self.semilla[0])
         print("mnemonico : " + self.semilla[1])
         print("Seed      : " + self.semilla[2])
         print("Esquema   : " + self.esquema)
+        print("M. FingerP: " + self.master_finger_print)
 
         i=0
         for HD in self.HDxp :
@@ -324,6 +332,7 @@ class cartera:
         print("mnemonico : " + self.semilla[1])
         print("Seed      : " + self.semilla[2])
         print("Esquema   : " + self.esquema)
+        print("M. FingerP: " + self.master_finger_print)
         print("")
         i=0
         for HD in self.HDxp :
@@ -346,6 +355,7 @@ class cartera:
         print("mnemonico : " + self.semilla[1])
         print("Seed      : " + self.semilla[2])
         print("Esquema   : " + self.esquema)
+        print("M. FingerP: " + self.master_finger_print)
         print("")
         if pagos:
             for p in self.pagos:
