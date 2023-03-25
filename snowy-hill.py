@@ -1,6 +1,12 @@
+"""
+ snowy_hill.py
+ Generacion de una cartera (en mainnet y testnet).
+
+ Autor: Grillo
+ Fecha de creación: antes de 2020
+"""
+
 ########################################################################################
-# snowy_hill.py
-# Generacion de una cartera (en mainnet y testnet).
 # La obtencion de las llaves privadas y publicas a partir de una semilla
 #  implica una serie de pasos poco intuitivos. Esta herramienta facilita esta
 #  labor y puede ayudar a conocer como se realiza dicha derivacion.
@@ -33,17 +39,20 @@
 #   Derivacion general
 # E=00000000000000000000000000000000; bx mnemonic-new $E| bx mnemonic-to-seed| bx hd-new --version 70615956| bx hd-private -i 44 -d|\
 #      bx hd-private -i 1 -d|bx hd-private -i 0 -d| bx hd-private -i 0 | bx hd-private -i 0|\
-#      bx hd-to-ec --config test.cfg| bx ec-to-wif --version 239|bx wif-to-public -c test.cfg |bx ec-to-address --version 111 
+#      bx hd-to-ec --config test.cfg| bx ec-to-wif --version 239|bx wif-to-public -c test.cfg |bx ec-to-address --version 111
 #    = mkpZhYtJu2r87Js3pDiWJDmPte2NRZ8bJV
 # E=00000000000000000000000000000000; bx mnemonic-new $E| bx mnemonic-to-seed| bx hd-new --version 70615956| bx hd-private -i 44 -d|\
 #      bx hd-private -i 1 -d|bx hd-private -i 0 -d| bx hd-private -i 0 | bx hd-private -i 0|\
 #      bx hd-to-ec --config test.cfg|bx ec-to-public -c test.cfg
 ########################################################################################
 
+# Importaciones estandar
 import os # para poder ejecutar comandos de shell
 import argparse #Manejo de argumentos en linea de comandos
 import sys
 from subprocess import Popen, PIPE
+# Importaciones de terceros
+# Importaciones locales
 
 
 VERBOSE=False
@@ -57,7 +66,14 @@ MAINNET=True # es redundante, lo hago para mejor lectura.
 
 ########################################################################################
 def main():
-    'Funcion inicial.'
+    """
+    Funcion principal
+    Tratamiento de la entrada de parametros de ejecución y ejecución secuencial.
+    :param argumento1: No hay argumentos
+    :type argumento1: NONE
+    :return: No devuelve nada
+    :rtype: NONE
+    """
     global VERBOSE
 
     # Comprobar que existe el programa bx
@@ -158,14 +174,18 @@ def main():
                     f.write("# %s\n%s" %(mycartera.esquema, mycartera.cadena_pagos()))
             except:
                 print("Error al tratar de escribir en fichero (%s)" %(ficheropagos))
-
+########################################################################################
 
 
 ########################################################################################
 class cartera:
-    """
+    """Representa un almacen de claves que se derivan de una semilla 
+
     Realiza la derivacion de una familia de direcciones a raiz de una semilla.
     Se puede iniciar la derivacion a varias alturas.
+
+        Attributes
+            semilla (str[]): 
     """
     semilla=['', '', '', '', ''] # E, Mnemon, Seed, m, M
     indice_m=3 # posicion de m en semilla[]¿?
@@ -191,12 +211,17 @@ class cartera:
     #ec_to_address="ec-to-address "
 
     def __init__(self, entropia="", esquema="", contrasena="", entropiaAmnemonico=False, testnet=False):
-        """Inicializa el objeto. Si entropia contiene dato se despliega la derivacion.
-            self.hd_new       ="hd-new --version 70615956 "
-            self.hd_to_public ="hd-to-public --config test.cfg "  #no funciona con --version 70617039
-            self.hd_to_ec     ="hd-to-ec --config test.cfg "  # FICHERO_CONFIGURACION_TESTNET
-            self.ec_to_wif    ="ec-to-wif --version 239 " # (-u)
-            self.ec_to_address="ec-to-address --version 111 "
+        """ Constructor de la clase cartera
+
+        Inicializa el objeto. Si entropia contiene dato se despliega la derivacion.
+
+        Args:
+            entropia (str): fuente de aleatoriedad
+            esquema (str):
+            contrasena (str):
+            entropiaAmnemonico (bool): True = obtener frase mnemonica desde parametro entropia
+                                       False = el parametro entropia representa la Seed
+            testnet (bool): True = modo testnet
         """
         self.testnet=testnet
         if (self.testnet):
@@ -227,7 +252,7 @@ class cartera:
         Pero se puede iniciar la secuencia antes: E -> mnemonico [+ passw] -> seed
         Esta clase permite derivar desde cualquier posicion. Para ello el parametro
         <entropia> se matiza segun:
-        Si <entropiaAmnwmonico> es True: representa el valor E
+        Si <entropiaAmnemonico> es True: representa el valor E
         Sino SI contiene mas de una cadena: se trata de una frase mnemonica
         En otro caso: representa seed
         ... PROPUESTA: SI NO FACILITA <ESQUEMA> SOLO SE DESARROLLA HASTA EL SEED. 
