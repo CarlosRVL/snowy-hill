@@ -7,16 +7,6 @@
 """
 
 ########################################################################################
-# La obtencion de las llaves privadas y publicas a partir de una semilla
-#  implica una serie de pasos poco intuitivos. Esta herramienta facilita esta
-#  labor y puede ayudar a conocer como se realiza dicha derivacion.
-#  - n (12, 24...) palabras (jaxx p.e. pide 12)
-#  - Diccionario Ingles. Mas estandar
-#
-#
-# partiendo de una semilla o una frase o una privkey. generar direcciones de interes.
-# Utilizar conmutador para testnet
-#
 #semilla
 #mnemonico
 #seed
@@ -62,8 +52,6 @@ FICHERO_CONFIGURACION_MAINNET="bx.cfg"
 TESTNET=False
 MAINNET=True # es redundante, lo hago para mejor lectura. 
 
-### Funciones: ###
-
 ########################################################################################
 def main():
     """
@@ -84,20 +72,20 @@ def main():
         sys.exit(msg)
 
     parser = argparse.ArgumentParser()
-    parser = argparse.ArgumentParser(description='%(prog)s : Derivar arbol de claves BTC.')
+    parser = argparse.ArgumentParser(description='%(prog)s : Derivar arbol de claves BTC según el BIP32. El parámetro ENTROPIA puede representar en realidad varias cosas: 1.- Múltiplo de 32 bits llamado ENTROPY en el BIP39, del que derivar la frase mnemonica, en este caso debe aparecer el parámetro "-d" 2.- La frase mnemónica, entre parentesis y separada por espacios. OJO: no se verifica que la frase cumpla BIP39. 3.- La Seed fuente de la generación de billeteras deterministas jerárquicas descrita en BIP32')
 
     parser.add_argument("-v", "--verbose", help="Mostrar información de depuración", action="store_true")
     parser.add_argument("-f", "--file", help="Nombre de archivo a procesar. SIN IMPLEMENTAR AUN")
     parser.add_argument("-t", "--testnet", help="Realizar la derivacion en TESTNET", action="store_true")
     parser.add_argument("-d", "--derivarmnemonico", help="El valor de entropia deriva el mnemonico", action="store_true")
-    parser.add_argument("-e", "--esquema", help="Esquema de derivación. eje: m/44'/0'/0'/0/0")
+    parser.add_argument("-e", "--esquema", help="Esquema de derivación. eje: m/44'/0'/0'/0/0 (Se utiliza m/44'/0'/0'/0/x,y para generar direcciones de pago desde x hasta y)")
     parser.add_argument("-s", "--secreto", help="Contraseña para añadir al mnemonico")
     parser.add_argument("-j", "--ejemplo", help="La cadena <entropia> se expandira (x32) y se utilizara esquema BIP44.", action="store_true")
     parser.add_argument("-p", "--payfile", help="Nombre del archivo en el que guardar las direcciones de pago.")
     parser.add_argument("-o", "--old", help="Ejecutar la version antigua.", action="store_true")
     parser.add_argument("-c", "--corto", help="Mostrar salida corta.", action="store_true")
     parser.add_argument("-cc", "--mascorto", help="Mostrar salida mas corta.", action="store_true")
-    parser.add_argument("entropia", help="Origen de la derivación (semilla (E), mnemonico, seed, xpriv...)")
+    parser.add_argument("entropia", help="Origen de la derivación (Entropia, Mnemonico, Seed, xpriv...)")
     args = parser.parse_args()
 
     # Almacenar el valor <entropia> en variable para separar lo del esquema de argumentos.
@@ -174,10 +162,9 @@ def main():
                     f.write("# %s\n%s" %(mycartera.esquema, mycartera.cadena_pagos()))
             except:
                 print("Error al tratar de escribir en fichero (%s)" %(ficheropagos))
-########################################################################################
-
 
 ########################################################################################
+
 class cartera:
     """Representa un almacen de claves que se derivan de una semilla 
 
@@ -420,56 +407,13 @@ class cartera:
                 print("")
 
     def cadena_pagos(self, pagos=True):
-    
         cadena=""
         for p in self.pagos:
             cadena+=p.cadena_p2pkh()+"\n"
         return cadena
 
-#    def print_csv_completa(self):
-#        i=0
-#        linea=""
-#
-#        cadena_encabezado= "_esquema_,_mnemonic_,_seed_"
-#        cadena_encabezado=+",_m_,_44_,_Xpub_44_,_rama01_,_Xpub_01_,_rama02_,_Xpub_02_,_rama03_,_Xpub_03_"
-#        cadena_encabezado=+",_Xpriv_pago4_01,_Xpub_pago_1,_prv_ec_1,_wif_1,_pub_ec_1,_p2pkh_1,_Xpriv_pago4_02,_Xpub_pago_2,_prv_ec_2,_wif_2,_pub_ec_2,_p2pkh_2,_Xpriv_pago4_03,_Xpub_pago_3,_prv_ec_3,_wif_3,_pub_ec_3,_p2pkh_3"
-#
-#        print(cadena_encabezado)
-#
-#        linea=linea + self.esquema
-#        linea=linea + self.semilla[1]
-#        linea=linea + self.semilla[2]
-#
-#        for p in self.pagos:
-#            i++
-#            if i>3:
-#                continue
-#            else:
-#                linea=linea+
-#                
-##                print("%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s", \
-# #                   %(self.esquema,self.semilla[1],self.semilla[2], ) )
-#
-#        i=0
-#        for HD in self.HDxp :
-#            try :
-#                nivel = self.esquema_derivacion[i]
-#                print ("- %4s: %s" %(nivel, HD[0])) #(self.HDxp[i])[0]))
-#                if VERBOSE:
-#                    print ("      - %s" %(HD[1])) #(self.HDxp[i])[1]))
-#            except:
-#                print("Error. Nos salimos del array HDxp.", sys.exc_info()[0])
-#            i+=1
-#        if pagos:
-#            for p in self.pagos:
-#                p.print_consola()
-#
-#
-
-
-
-
 ########################################################################################
+
 class direccion_pago(object):
     """
     Para la version Testnet, asumimos que existe el fichero test.cfg con la configuracion necesaria. 
@@ -603,9 +547,8 @@ class direccion_pago(object):
         except:
             _Depurame_(378, ["Error en 'pago.cadena_wif'"])
 
-
-
 ########################################################################################
+
 def derivacion(entropia, esquema="m/44'/0'/0'/0/0", contrasena="", entropiaAmnemonico=False):
     """
     Desarrolla secuencia de derivación desde la <entropia> hasta la <direccion>
@@ -730,10 +673,8 @@ def derivacion(entropia, esquema="m/44'/0'/0'/0/0", contrasena="", entropiaAmnem
 
     return 1
 
-
-
-
 ########################################################################################
+
 def direccionesdepago(xprv_fin):
     """
     derivar las direcciones de pago finales a partir de una hd xprv.
@@ -770,9 +711,8 @@ def direccionesdepago(xprv_fin):
     direccion["address_p2pkh"]=(os.popen("bx"+ ec_to_address + direccion["ec_pub"]).read()).rstrip("\n")
     return direccion
 
-
-
 ########################################################################################
+
 def DesdeWif(wif):
     """
     Para estudiar la derivacion que realiza el cliente Bitcoin Colore
@@ -793,9 +733,8 @@ def DesdeWif(wif):
     priv_ec = (os.popen("bx wif-to-ec " + privada_wif).read()).rstrip("\n")
     xpriv_de_wif = (os.popen("bx" + hd_new +  priv_ec).read()).rstrip("\n")
 
-
 ########################################################################################
-#depuracion
+
 def _Depurame_(ref, datos, finalizar=False):
     """
     Uso:
