@@ -82,7 +82,7 @@ optional arguments:
 
 ## Introducción
 
-Esta herramienta es similar y en parte inspirada por la de Ian Coleman. El proposito es disponer de la misma funcionalidad de la herramienta de Ian Coleman pero en modo comando que permita un modo más rápido de general resultados enfocados al estudio de la derivación. 
+Esta herramienta es similar y en parte inspirada por la de Ian Coleman. El proposito es disponer de la misma funcionalidad de la herramienta de Ian Coleman pero en linea de comandos, lo que aporta ventajas de agilidad generando resultados cuando estamos estudiando como funciona la derivación. 
 
 Se puede utilizar para generar tus propias llaves utilizando alguna fuente de entropía, pero no se garantiza la seguridad, especialmente en cuanto a privacidad.
 
@@ -90,14 +90,17 @@ La obtencion de las llaves privadas y publicas a partir de una semilla implica u
 
 Se utiliza el diccionario Ingles y se recomienda que no se utilice ningún otro diccionario. 
 
-Partiendo de una semilla o una frase o una privkey. generar direcciones de interes.
+Partiendo de una semilla o una frase o una privkey generamos direcciones de interes.
  
-Me parece fundamental que cualquier herramienta cuente con un modo textnet, está también. 
+Me parece fundamental que cualquier herramienta cuente con un modo testnet, está también. 
 
 
 [//]: # (semilla)
+
 [//]: # mnemonico
+
 [//]: # seed
+
 #xpriv (m)
 #xpub (M)
 #P2PK
