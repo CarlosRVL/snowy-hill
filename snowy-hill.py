@@ -187,51 +187,55 @@ class cartera:
         Attributes
             semilla (str[]): 
     """
-    semilla=['', '', '', '', ''] # E, Mnemon, Seed, m, M
-    indice_m=3 # posicion de m en semilla[]¿?
-    esquema=""  #Esquema de derivacion en una sola cadena
-    esquema_derivacion=[] # ["m","0'",...] # Esquema separado.
-    esquema_pagos=[] # [ini, fin]
-    HDxp=[]  # almacena [xpriv, xpub] de un determinado nivel
-    pagos=[] # [[HD, ,...],[HD, ,...],[HD, ,...],...]
-    testnet=False
-    master_finger_print=""
-    #MasterFingerPrint
-    #bx hd-new $PPP| bx hd-to-ec |bx ec-to-public| bx bitcoin160 (primeros 4 Bytes)
-
-    """
-     Las siguientes variables almacenan los comandos de bx, con el
-     objetivo de modificarlas, principalmente para testnet.
-    """
-    hd_new="hd-new "
-    hd_public="hd-public "
-    hd_to_public="hd-to-public "
-    #hd_to_ec="hd-to-ec "
-    #ec_to_wif="ec-to-wif "
-    #ec_to_address="ec-to-address "
 
     def __init__(self, entropia="", esquema="", contrasena="", entropiaAmnemonico=False, testnet=False):
         """ Constructor de la clase cartera
 
-        Inicializa el objeto. Si entropia contiene dato se despliega la derivacion.
+        No solo inicializa el objeto, en caso de que el argumente entropia no este
+        vacio realiza toda la derivacion llamando a las funciones encargadas de realizarla. 
 
         Args:
             entropia (str): fuente de aleatoriedad
-            esquema (str):
-            contrasena (str):
+            esquema (str): esquema de derivacion
+            contrasena (str): aplicacion BIP 39
             entropiaAmnemonico (bool): True = obtener frase mnemonica desde parametro entropia
                                        False = el parametro entropia representa la Seed
             testnet (bool): True = modo testnet
+        Return:
+               None ( ): nada
         """
+        self.semilla=['', '', '', '', ''] # E, Mnemon, Seed, m, M
+        self.indice_m=3 # posicion de m en semilla[]¿?
+        self.esquema=""  #Esquema de derivacion en una sola cadena
+        self.esquema_derivacion=[] # ["m","0'",...] # Esquema separado.
+        self.esquema_pagos=[] # [ini, fin]
+        self.HDxp=[]  # almacena [xpriv, xpub] de un determinado nivel
+        self.pagos=[] # [[HD, ,...],[HD, ,...],[HD, ,...],...]
+        self.testnet=False
+        self.master_finger_print=""
+        #self.MasterFingerPrint
+        #bx hd-new $PPP| bx hd-to-ec |bx ec-to-public| bx bitcoin160 (primeros 4 Bytes)
+
+        """
+        Las siguientes variables almacenan los comandos de bx, con el
+        objetivo de modificarlas, principalmente para testnet.
+        """
+        self.hd_new="hd-new "
+        self.hd_public="hd-public "
+        self.hd_to_public="hd-to-public "
+        #self.hd_to_ec="hd-to-ec "
+        #self.ec_to_wif="ec-to-wif "
+        #self.ec_to_address="ec-to-address "
+
         self.testnet=testnet
         if (self.testnet):
             self.hd_new       ="hd-new --version 70615956 "
-            self.hd_public    ="hd-public --config " + FICHERO_CONFIGURACION_TESTNET + " "  #no funciona con --version 70617039
+            self.hd_public    ="hd-public --config " + FICHERO_CONFIGURACION_TESTNET + " "  
             self.hd_to_public ="hd-to-public --version 70617039 "
             self.hd_to_ec     ="hd-to-ec --config test.cfg "
-#            self.hd_to_public ="hd-to-public --config " + FICHERO_CONFIGURACION_TESTNET + " " #
         else:
-            self.hd_new       ="hd-new " # 76066276, 049d7878 to produce a "yprv" prefix. Testnet uses 0x044a5262 "upub" and 0x044a4e28 "uprv."
+            # 76066276, 049d7878 to produce a "yprv" prefix. Testnet uses 0x044a5262 "upub" and 0x044a4e28 "uprv."
+            self.hd_new       ="hd-new " 
             self.hd_public    ="hd-public "
             self.hd_to_public ="hd-to-public "
             self.hd_to_ec     ="hd-to-ec "
@@ -282,6 +286,9 @@ class cartera:
 
 
     def desplegar_HD(self):
+        """
+        Organiza el recorrido por la cadena de derivacion para las HD 
+        """
         # Y continuamos descendiendo
         ultima_derivacion = len(self.esquema_derivacion)
         n_deriva=0
@@ -317,22 +324,40 @@ class cartera:
 
 
     def desarrollo_hd(self, origen, indice, parametro_dureza=""):
+        """
+        Calculo de los XPRV y XPUB
+        """
         xprv = (os.popen("bx hd-private -i %s %s %s " %(indice, parametro_dureza, origen)).read()).rstrip("\n")
         xpub = (os.popen("bx  " + self.hd_to_public + xprv).read()).rstrip("\n")
         return [xprv, xpub]
 
     def calculo_m_finger_p(self):
+        """
+        Calcula la huella dactilar de la cartera.
+        """
         calculo="bx " + self.hd_to_ec +" "+ self.semilla[self.indice_m] + " | bx ec-to-public | bx bitcoin160"
         temp= (os.popen(calculo).read()).rstrip('\n')
         self.master_finger_print=temp[0:8]
 
     def arbol(self, seed, esquema ):
+        """
+        PENDIENTE
+        (no recuerdo que queria hacer aqui)
+        """
         pass
 
     def pago(self, xprv):
+        """
+        PENDIENTE
+        (no recuerdo que queria hacer aqui)
+        """
         pass
 
     def print_consola(self, pagos=True):
+        """
+        Visualizar los datos por consola. Formato por defecto
+        """
+
         print("Entropia  : " + self.semilla[0])
         print("mnemonico : " + self.semilla[1])
         print("Seed      : " + self.semilla[2])
@@ -354,6 +379,9 @@ class cartera:
                 p.print_consola()
 
     def print_sencilla(self, pagos=True):
+        """
+        Visualizar los datos por consola. Formato sencillo con menos datos
+        """
         print("mnemonico : " + self.semilla[1])
         print("Seed      : " + self.semilla[2])
         print("Esquema   : " + self.esquema)
@@ -377,6 +405,9 @@ class cartera:
                 print("")
 
     def print_massencilla(self, pagos=True):
+        """
+        Visualizar los datos por consola. Formato mas sencillo aun menos datos
+        """
         print("mnemonico : " + self.semilla[1])
         print("Seed      : " + self.semilla[2])
         print("Esquema   : " + self.esquema)
@@ -389,6 +420,7 @@ class cartera:
                 print("")
 
     def cadena_pagos(self, pagos=True):
+    
         cadena=""
         for p in self.pagos:
             cadena+=p.cadena_p2pkh()+"\n"
