@@ -101,4 +101,4 @@ De momento no llego más allá de las direcciones Legacy. Queda pendiente la imp
 
 [//]: # (semilla)
 [//]: # (mnemonico)
-[//]: # (seed #xpriv (m) #xpub (M) #P2PK #P2PKH #P2SH #BENCH )
+[//]: # (seed xpriv (m) xpub (M) P2PK P2PKH P2SH BENCH )
