@@ -91,20 +91,14 @@ La obtencion de las llaves privadas y publicas a partir de una semilla implica u
 Se utiliza el diccionario Ingles y se recomienda que no se utilice ningún otro diccionario. 
 
 Partiendo de una semilla o una frase o una privkey generamos direcciones de interes.
- 
+
+Utilizo libbitcoin-explorer (bx) https://github.com/libbitcoin/libbitcoin-explorer.git 
+
 Me parece fundamental que cualquier herramienta cuente con un modo testnet, está también. 
+
+De momento no llego más allá de las direcciones Legacy. Queda pendiente la implementación de la derivación Segwit y Taproot. 
 
 
 [//]: # (semilla)
-
-[//]: # mnemonico
-
-[//]: # seed
-
-#xpriv (m)
-#xpub (M)
-#P2PK
-#P2PKH
-#P2SH
-#BENCH
-
+[//]: # (mnemonico)
+[//]: # (seed #xpriv (m) #xpub (M) #P2PK #P2PKH #P2SH #BENCH )
