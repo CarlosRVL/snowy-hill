@@ -59,9 +59,9 @@ Partiendo de una semilla o una frase o una privkey generamos direcciones de inte
 [//]: # (seed xpriv m, xpub M, P2PK P2PKH P2SH BENCH )
 
 
-### Ejemplos de salida:
+## Ejemplos de salida:
 
-#### Ejemplo sencillo utilizando el parametro ``-j``, que se utiliza justamente para producir ejemplo rápidamente.
+### Ejemplo sencillo utilizando el parametro ``-j``, que se utiliza justamente para producir ejemplo rápidamente.
 
 ~~~ 
 snowy-hill$ python3 snowy-hill.py  -j 0
@@ -88,7 +88,7 @@ pub_ec: 03aaeb52dd7494c361049de67cc680e83ebcbbbdbeb13637d92cd845f70308af5e
 
 
 
-### Ayuda 
+## Ayuda 
 
 ~~~
 snowy-hill$ python3 snowy-hill.py -h
@@ -123,4 +123,9 @@ optional arguments:
   -c, --corto           Mostrar salida corta.
   -cc, --mascorto       Mostrar salida mas corta.
 ~~~
+
+## Otros usos
+Cuando se quiere probar una wallet ya sea hard o soft, podemos probar varias frases semilla y comparar las direcciones y la Master Fingerprint que nos devuelve la cartera. Algunas wallets utilizan una implementación propia o esquemas multifirma u otra adaptación que implica que dependes de esa implementación "desviada" del estandar para recuperar tus fondos. Si la wallet y snowy-hill generan las mismas direcciones significa que la wallet utiliza el estardar. 
+
+
 
