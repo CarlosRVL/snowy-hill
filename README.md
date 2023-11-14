@@ -12,6 +12,7 @@ Rindo homenaje a varias personas que me han inspirado en la madriguera Bitcoin y
 - Alfredo Romeo (Datta Capital)
 - https://www.bitcoin-1o1.info/
 - Carlos Matinez (interescompuesto)
+- Joan Tubau (Kapital)
 
 ## Aviso
 
@@ -86,7 +87,40 @@ pub_ec: 03aaeb52dd7494c361049de67cc680e83ebcbbbdbeb13637d92cd845f70308af5e
 #=====================================
 ~~~
 
-Lo que estamos viendo es una derivación que parte de un valor *entropy*, (el parametro -j 0 produce una cadena expandiendo La cadena <entropia> se expandira (x32) y se utilizara esquema BIP44.)
+Lo que estamos viendo es una derivación que parte de un valor *entropy* (el parametro -j X expande un valor exadecimal X 32 veces y lo pasa como *entropy*, y utiliza el esquema BIP44) 
+- Esa **Entropia** es transformada en el **mnemonico** (bx mnemonic-new 00000000000000000000000000000000). 
+- Del **mnemonico** se deriva la **Seed** (bx mnemonic-to-seed "abandon abandon...about"). Hasta aquí se ha aplicado el **BIP39**. 
+
+He añadido el calculo del fingerprint. Se calcula partiendo de **m** (bx hd-to-ec \<m\> | bx ec-to-public | bx bitcoin160) y tomando los 8 primeros Bytes.      
+
+Ahora pasamos a aplicar BIP32 y BIP44:
+
+- A esta semilla se la hace pasar por el esquema *m/44'/0'/0'/0/0* (BIP44), camino de derivación que se ha a seguir. Consiste en ir obteniendo claves privadas a partir de la inmediata anterior, *Hieratical Dereministic* (HD). Todas estas son XPRIV
+  - Para obtener **m**, master node, se aplica (bx hd-new) a la **Seed**
+  - Para obtener **44'** se aplica (bx hd-private -i 44 -d) a **m**; El simbolo **'** aparece en otros lugares como **H** (hard) significa que la XPUB asociada no se puede utilizar para derivar direcciones de pago (Tengo que aclararlo mejor, porque creo que falta algún matiz).
+  - **0'** (bx hd-private -i 0 -d)
+  - **0'** (bx hd-private -i 0 -d)
+  - **0** (bx hd-private -i 0); En esta clave no aparece **'**, significa que su XPUB asociada se puede utilizar para derivar direcciones de pago (pendiente matizar)
+  - **0** (bx hd-private -i 0)
+  - **xpub** se muestra la publica correspondiente a la última XPRV obtenida (hd-to-public)
+- En este punto entra en juego la famosa Curva Eliptica, seguimos derivando en busca de la dirección de pago
+  - **prv_ec**. Transforma la ultima **XPRIV** con curva eliptica (bx hd-to-ec ) 
+  - **wif** Transformamos la anterior en clave wif (bx ec-to-wif )
+  - **pub_ec** Obtenemos la XPUB a partir de la wif (bx wif-to-public) (Tambien se puede obtener desde la EC con ec-to-public)
+  - **p2pkh** Obtenemos la address o dirección de pago a partir de la XPUB (bx ec-to-address)
+
+Entre parétesis he puesto el comando que se utiliza en cada paso, y que se puede lanzar en línea de comandos. Si el sufrido lector quisiera probar todo el proceso, partiendo de la entropia para generar la dirección de pago puede lanzar el siguiente comando (Debe contar con el ejecutable bx). 
+~~~
+bx mnemonic-new 00000000000000000000000000000000| bx mnemonic-to-seed| bx hd-new | bx hd-private -i 44 -d|\
+      bx hd-private -i 0 -d|bx hd-private -i 0 -d| bx hd-private -i 0 | bx hd-private -i 0|\
+      bx hd-to-ec --config test.cfg|bx ec-to-public 
+~~~
+Si quisiera experimentar a generar alguno de los pasos intermedios, solo debe eliminar los pasos siguienes. Por ejemplo para generar la *master node* puede lanzar: 
+~~~
+bx mnemonic-new 00000000000000000000000000000000| bx mnemonic-to-seed| bx hd-new 
+~~~
+
+
 
 
 ## Ayuda 
@@ -126,7 +160,7 @@ optional arguments:
 ~~~
 
 ## Otros usos
-Cuando se quiere probar una wallet ya sea hard o soft, podemos probar varias frases semilla y comparar las direcciones y la Master Fingerprint que nos devuelve la cartera. Algunas wallets utilizan una implementación propia o esquemas multifirma u otra adaptación que implica que dependes de esa implementación "desviada" del estandar para recuperar tus fondos. Si la wallet y snowy-hill generan las mismas direcciones significa que la wallet utiliza el estardar. 
+Cuando se quiere validar una wallet ya sea hard o soft, podemos experimentar con varias frases semilla y comparar las direcciones y la Master Fingerprint que nos devuelve la cartera. Algunas wallets utilizan una implementación propia o esquemas multifirma u otra adaptación que implica que dependes de esa implementación "desviada" del estandar para recuperar tus fondos. Si la wallet y snowy-hill generan las mismas direcciones significa que la wallet utiliza el estardar. 
 
 
 
