@@ -60,7 +60,7 @@ Partiendo de una semilla o una frase o una privkey generamos direcciones de inte
 [//]: # (seed xpriv m, xpub M, P2PK P2PKH P2SH BENCH )
 
 
-## Ejemplos de salida:
+## Ejemplo de salida y explicación
 
 ### Ejemplo sencillo utilizando el parametro ``-j``, que se utiliza justamente para producir ejemplo rápidamente.
 
@@ -121,7 +121,7 @@ bx mnemonic-new 00000000000000000000000000000000| bx mnemonic-to-seed| bx hd-new
 ~~~
 
 
-
+Hay más ejemplos en https://github.com/CarlosRVL/snowy-hill/blob/master/ejemplos.md#ejemplos-de-utilizaci%C3%B3n
 
 ## Ayuda 
 
