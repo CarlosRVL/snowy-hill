@@ -86,6 +86,7 @@ pub_ec: 03aaeb52dd7494c361049de67cc680e83ebcbbbdbeb13637d92cd845f70308af5e
 #=====================================
 ~~~
 
+Lo que estamos viendo es una derivación que parte de un valor *entropy*, (el parametro -j 0 produce una cadena expandiendo La cadena <entropia> se expandira (x32) y se utilizara esquema BIP44.)
 
 
 ## Ayuda 
