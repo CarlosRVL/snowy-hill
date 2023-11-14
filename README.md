@@ -1,5 +1,5 @@
 # snowy-hill
-# Estudio de la derivación de claves con bx (Colina nevada)
+# Estudio de la derivación de claves con bx
 
 ## Agradecimientos
 
@@ -18,34 +18,50 @@ Rindo homenaje a varias personas que me han inspirado en la madriguera Bitcoin y
 Esta herramienta tiene objetivos educacionales. Aunque podría ser utilizada para producir o manejar tus frases mnemónicas o tus claves publicas y privadas ello supone un riesgo para tu privacidad y la seguridad de tus fondos.
 
 ## Introducción
-
-Esta herramienta es similar y en parte inspirada por la de Ian Coleman. El proposito es disponer de la misma funcionalidad de la herramienta de Ian Coleman pero en linea de comandos, lo que aporta ventajas de agilidad generando resultados cuando estamos estudiando como funciona la derivación. 
+Cuando nos enfrentamos a la custodia de Bitcoin nos encontramos con que tenemos que *generar* unas *palabras*, que se suelen identificar como una clave privada, y a partir estas se generan *mágicamente* las direcciones bitcoin. Esta herramienta ayuda a desvelar la mágia. Es similar (e inspirada) a la de *Ian Coleman*, buscando la ejecución y salida en linea de comandos.
 
 Se puede utilizar para generar tus propias llaves utilizando alguna fuente de entropía, pero no se garantiza la seguridad, especialmente en cuanto a privacidad.
 
-La obtencion de las llaves privadas y publicas a partir de una semilla implica una serie de pasos poco intuitivos. Esta herramienta facilita esta labor y puede ayudar a conocer como se realiza dicha derivacion.
+Me parece fundamental que cualquier herramienta cuente con un modo __testnet__. El parametro -t permite utilizar el modo testnet. 
+
+De momento no llego más allá de las direcciones Legacy. Queda pendiente la implementación de la derivación Segwit y Taproot. 
+
+### Requisitos
+Esta herramienta se ha pensado para ejecutarse en Linux. Requiere python y libbitcoin-explorer (bx) (https://github.com/libbitcoin/libbitcoin-explorer.git)
+Se puede descargar un ejecutable ya compilado de (https://github.com/libbitcoin/libbitcoin-explorer/wiki/Download-BX)
+Es necesario que la ruta al comando "bx" esté se en el PATH. 
+
+
+## Qué hace la herramienta. La derivación de llaves
+La obtencion de las llaves privadas y publicas a partir de una semilla implica una serie de pasos poco intuitivos. Esta herramienta quiere visualizar esos pasos para facilitar el estudio de como se realiza dicha derivacion. Estamos hablando de lo definido en: 
+
+- BIT0039 [^BIP39-1] Implementación de mnemónico.
+  
+  El BIT39 define el modo en que a partir de un número (múltiplo de 32 bits), al que llama **entropia** inicial, se obtiene una frase **mnemónica** (conocida como <<las 12 o 24 palabras>>). El número de palabras dependerá de la longitud de la entropía inicial. También define la manera en que, a partir del mnemónico, se deriva una **semilla** (**SEED**)
+
+- BIP0032 [^BIP32-1] Generación de wallet determinista.
+  
+  El BIT32 define una forma de generar una wallet jerárquica determinista.
+
+- El termino **cadena de derivación** se refiere a una cadena, por ejemplo: **m/44'/0'/0'/0/0** , que representa los pasos que se dan para llegar desde la semilla hasta las direcciones de pago.
+  
+
+[^BIP39-1]: (https://en.bitcoin.it/wiki/BIP_0039) (https://github.com/bitcoin/bips/blob/master/bip-0039.mediawiki)
+[^BIP32-1]: (https://en.bitcoin.it/wiki/BIP_0032) (https://github.com/bitcoin/bips/blob/master/bip-0032.mediawiki)
 
 Se utiliza el diccionario Ingles y se recomienda que no se utilice ningún otro diccionario. 
 
 Partiendo de una semilla o una frase o una privkey generamos direcciones de interes.
-
-Utilizo libbitcoin-explorer (bx) https://github.com/libbitcoin/libbitcoin-explorer.git 
-
-Me parece fundamental que cualquier herramienta cuente con un modo testnet, está también. 
-
-De momento no llego más allá de las direcciones Legacy. Queda pendiente la implementación de la derivación Segwit y Taproot. 
 
 
 [//]: # (semilla)
 [//]: # (mnemonico)
 [//]: # (seed xpriv m, xpub M, P2PK P2PKH P2SH BENCH )
 
-## Requisitos
-Esta herramienta se ha pensado para ejecutarse en Linux. Requiere python y libbitcoin-explorer (bx) https://github.com/libbitcoin/libbitcoin-explorer.git, es necesario que la ruta al comando "bx" esté se en el PATH. 
 
-### Ejemplo de salida:
+### Ejemplos de salida:
 
-Muestro un ejemplo sencillo utilizando el parametro ``-j``, que se utiliza justamente para producir ejemplo rápidamente.
+#### Ejemplo sencillo utilizando el parametro ``-j``, que se utiliza justamente para producir ejemplo rápidamente.
 
 ~~~ 
 snowy-hill$ python3 snowy-hill.py  -j 0
