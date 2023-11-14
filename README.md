@@ -17,6 +17,32 @@ Rindo homenaje a varias personas que me han inspirado en la madriguera Bitcoin y
 
 Esta herramienta tiene objetivos educacionales. Aunque podría ser utilizada para producir o manejar tus frases mnemónicas o tus claves publicas y privadas ello supone un riesgo para tu privacidad y la seguridad de tus fondos.
 
+## Introducción
+
+Esta herramienta es similar y en parte inspirada por la de Ian Coleman. El proposito es disponer de la misma funcionalidad de la herramienta de Ian Coleman pero en linea de comandos, lo que aporta ventajas de agilidad generando resultados cuando estamos estudiando como funciona la derivación. 
+
+Se puede utilizar para generar tus propias llaves utilizando alguna fuente de entropía, pero no se garantiza la seguridad, especialmente en cuanto a privacidad.
+
+La obtencion de las llaves privadas y publicas a partir de una semilla implica una serie de pasos poco intuitivos. Esta herramienta facilita esta labor y puede ayudar a conocer como se realiza dicha derivacion.
+
+Se utiliza el diccionario Ingles y se recomienda que no se utilice ningún otro diccionario. 
+
+Partiendo de una semilla o una frase o una privkey generamos direcciones de interes.
+
+Utilizo libbitcoin-explorer (bx) https://github.com/libbitcoin/libbitcoin-explorer.git 
+
+Me parece fundamental que cualquier herramienta cuente con un modo testnet, está también. 
+
+De momento no llego más allá de las direcciones Legacy. Queda pendiente la implementación de la derivación Segwit y Taproot. 
+
+
+[//]: # (semilla)
+[//]: # (mnemonico)
+[//]: # (seed xpriv m, xpub M, P2PK P2PKH P2SH BENCH )
+
+## Requisitos
+Esta herramienta se ha pensado para ejecutarse en Linux. Requiere python y libbitcoin-explorer (bx) https://github.com/libbitcoin/libbitcoin-explorer.git, es necesario que la ruta al comando "bx" esté se en el PATH. 
+
 ### Ejemplo de salida:
 
 Muestro un ejemplo sencillo utilizando el parametro ``-j``, que se utiliza justamente para producir ejemplo rápidamente.
@@ -43,6 +69,8 @@ pub_ec: 03aaeb52dd7494c361049de67cc680e83ebcbbbdbeb13637d92cd845f70308af5e
  p2pkh: 1LqBGSKuX5yYUonjxT5qGfpUsXKYYWeabA
 #=====================================
 ~~~
+
+
 
 ### Ayuda 
 
@@ -80,25 +108,3 @@ optional arguments:
   -cc, --mascorto       Mostrar salida mas corta.
 ~~~
 
-## Introducción
-
-Esta herramienta es similar y en parte inspirada por la de Ian Coleman. El proposito es disponer de la misma funcionalidad de la herramienta de Ian Coleman pero en linea de comandos, lo que aporta ventajas de agilidad generando resultados cuando estamos estudiando como funciona la derivación. 
-
-Se puede utilizar para generar tus propias llaves utilizando alguna fuente de entropía, pero no se garantiza la seguridad, especialmente en cuanto a privacidad.
-
-La obtencion de las llaves privadas y publicas a partir de una semilla implica una serie de pasos poco intuitivos. Esta herramienta facilita esta labor y puede ayudar a conocer como se realiza dicha derivacion.
-
-Se utiliza el diccionario Ingles y se recomienda que no se utilice ningún otro diccionario. 
-
-Partiendo de una semilla o una frase o una privkey generamos direcciones de interes.
-
-Utilizo libbitcoin-explorer (bx) https://github.com/libbitcoin/libbitcoin-explorer.git 
-
-Me parece fundamental que cualquier herramienta cuente con un modo testnet, está también. 
-
-De momento no llego más allá de las direcciones Legacy. Queda pendiente la implementación de la derivación Segwit y Taproot. 
-
-
-[//]: # (semilla)
-[//]: # (mnemonico)
-[//]: # (seed xpriv m, xpub M, P2PK P2PKH P2SH BENCH )
