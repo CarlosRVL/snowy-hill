@@ -38,11 +38,11 @@ La obtencion de las llaves privadas y publicas a partir de una semilla implica u
 
 - BIT0039 [^BIP39-1] Implementación de mnemónico.
   
-  El BIT39 define el modo en que a partir de un número (múltiplo de 32 bits), al que llama **entropia** inicial, se obtiene una frase **mnemónica** (conocida como <<las 12 o 24 palabras>>). El número de palabras dependerá de la longitud de la entropía inicial. También define la manera en que, a partir del mnemónico, se deriva una **semilla** (**SEED**)
+  BIT39 define el modo en que a partir de un número (múltiplo de 32 bits), al que llama **entropia** inicial, se obtiene una frase **mnemónica** (conocida como <<las 12 o 24 palabras>>). El número de palabras dependerá de la longitud de la entropía inicial. También define la manera en que, a partir del mnemónico, se deriva una **semilla** (**SEED**)
 
 - BIP0032 [^BIP32-1] Generación de wallet determinista.
   
-  El BIT32 define una forma de generar una wallet jerárquica determinista.
+  BIT32 define una forma de generar una wallet jerárquica determinista. Es lo que permite tener miles de direcciones a partir de una sola semilla. 
 
 - El termino **cadena de derivación** se refiere a una cadena, por ejemplo: **m/44'/0'/0'/0/0** , que representa los pasos que se dan para llegar desde la semilla hasta las direcciones de pago.
   
@@ -52,7 +52,7 @@ La obtencion de las llaves privadas y publicas a partir de una semilla implica u
 
 Se utiliza el diccionario Ingles y se recomienda que no se utilice ningún otro diccionario. 
 
-Partiendo de una semilla o una frase o una privkey generamos direcciones de interes.
+Los parametro permiten definir el punto de partida, pudiendo partir de la entropia, la semilla, la frase o una privkey, y generará las direcciones de pago de interes. 
 
 
 [//]: # (semilla)
@@ -87,7 +87,7 @@ pub_ec: 03aaeb52dd7494c361049de67cc680e83ebcbbbdbeb13637d92cd845f70308af5e
 #=====================================
 ~~~
 
-Lo que estamos viendo es una derivación que parte de un valor *entropy* (el parametro -j X expande un valor exadecimal X 32 veces y lo pasa como *entropy*, y utiliza el esquema BIP44) 
+Lo que estamos viendo es una derivación que parte de un valor *entropy* (el parametro -j X expande un valor hexadecimal X 32 veces y lo pasa como *entropy*, y utiliza el esquema BIP44) 
 - Esa **Entropia** es transformada en el **mnemonico** (bx mnemonic-new 00000000000000000000000000000000). 
 - Del **mnemonico** se deriva la **Seed** (bx mnemonic-to-seed "abandon abandon...about"). Hasta aquí se ha aplicado el **BIP39**. 
 
