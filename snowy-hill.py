@@ -63,7 +63,6 @@ def main():
     :rtype: NONE
     """
     global VERBOSE
-
     # Comprobar que existe el programa bx
     try:
         Popen('bx', stdout=PIPE, stderr=PIPE)
@@ -73,7 +72,6 @@ def main():
 
     parser = argparse.ArgumentParser()
     parser = argparse.ArgumentParser(description='%(prog)s : Derivar arbol de claves BTC según el BIP32. El parámetro ENTROPIA puede representar en realidad varias cosas: 1.- Múltiplo de 32 bits llamado ENTROPY en el BIP39, del que derivar la frase mnemonica, en este caso debe aparecer el parámetro "-d" 2.- La frase mnemónica, entre parentesis y separada por espacios. OJO: no se verifica que la frase cumpla BIP39. 3.- La Seed fuente de la generación de billeteras deterministas jerárquicas descrita en BIP32')
-
     parser.add_argument("-v", "--verbose", help="Mostrar información de depuración", action="store_true")
     parser.add_argument("-f", "--file", help="Nombre de archivo a procesar. SIN IMPLEMENTAR AUN")
     parser.add_argument("-t", "--testnet", help="Realizar la derivacion en TESTNET", action="store_true")
@@ -105,11 +103,11 @@ def main():
 
     TESTNET=args.testnet
     MAINNET=not args.testnet
-    if (TESTNET):  #comprobar que existe fichero de configuracion para testnet. 
+    if (TESTNET):  #comprobar que existe fichero de configuracion para testnet.
         if os.path.exists(FICHERO_CONFIGURACION_TESTNET):
             BIP44 = "m/44'/1'/0'/0/0"
         else:
-            print ("Error: no existe el fichero de configuracion para testnet.") 
+            print ("Error: no existe el fichero de configuracion para testnet.")
             exit(1)
     else:
         if os.path.exists(FICHERO_CONFIGURACION_MAINNET):
@@ -164,20 +162,15 @@ def main():
                 print("Error al tratar de escribir en fichero (%s)" %(ficheropagos))
 
 ########################################################################################
-
 class cartera:
     """Representa un almacen de claves que se derivan de una semilla 
-
     Realiza la derivacion de una familia de direcciones a raiz de una semilla.
     Se puede iniciar la derivacion a varias alturas.
-
-        Attributes
-            semilla (str[]): 
+    Attributes
+    - semilla (str[]): 
     """
-
     def __init__(self, entropia="", esquema="", contrasena="", entropiaAmnemonico=False, testnet=False):
         """ Constructor de la clase cartera
-
         No solo inicializa el objeto, en caso de que el argumente entropia no este
         vacio realiza toda la derivacion llamando a las funciones encargadas de realizarla. 
 
@@ -213,7 +206,6 @@ class cartera:
         #self.hd_to_ec="hd-to-ec "
         #self.ec_to_wif="ec-to-wif "
         #self.ec_to_address="ec-to-address "
-
         self.testnet=testnet
         if (self.testnet):
             self.hd_new       ="hd-new --version 70615956 "
@@ -226,12 +218,10 @@ class cartera:
             self.hd_public    ="hd-public "
             self.hd_to_public ="hd-to-public "
             self.hd_to_ec     ="hd-to-ec "
-
         if (esquema):
             self.esquema = esquema
             self.esquema_derivacion = self.esquema.split("/")
         self.contrasena=contrasena
-
         if (entropia): # Si se inicializa con un valor de entropia desarrollamos
             self.desplegar_seed(entropia,entropiaAmnemonico) 
             self.desplegar_HD()
@@ -248,7 +238,6 @@ class cartera:
         En otro caso: representa seed
         ... PROPUESTA: SI NO FACILITA <ESQUEMA> SOLO SE DESARROLLA HASTA EL SEED. 
         """
-
         if(entropiaAmnemonico): # Si es true se debe generar una frase a partir de la entropia
             i=0
         else:
@@ -267,10 +256,8 @@ class cartera:
 #                lambda Pr:(os.popen("bx hd-private -i %s %s %s " %(indice, duro, Pr)).read()).rstrip("\n"),\
                 lambda m:(os.popen("bx " + self.hd_to_public + m).read()).rstrip("\n"),\
                 ]
-
         for j in range(i,len(lderivacion)):
             self.semilla[j+1]=lderivacion[j](self.semilla[j])
-
 
     def desplegar_HD(self):
         """
@@ -344,13 +331,11 @@ class cartera:
         """
         Visualizar los datos por consola. Formato por defecto
         """
-
         print("Entropia  : " + self.semilla[0])
         print("mnemonico : " + self.semilla[1])
         print("Seed      : " + self.semilla[2])
         print("Esquema   : " + self.esquema)
         print("M. FingerP: " + self.master_finger_print)
-
         i=0
         for HD in self.HDxp :
             try :
@@ -413,7 +398,6 @@ class cartera:
         return cadena
 
 ########################################################################################
-
 class direccion_pago(object):
     """
     Para la version Testnet, asumimos que existe el fichero test.cfg con la configuracion necesaria. 
@@ -456,7 +440,6 @@ class direccion_pago(object):
 
         self.deriva(self.xprv, "xprv")
 
-
     def deriva(self, origen, tipo):
         """
         derivar las direcciones de pago finales a partir de una hd xprv.
@@ -480,27 +463,22 @@ class direccion_pago(object):
             origen = (os.popen("bx " + wif-to-ec + origen).read()).rstrip("\n")
 
         temp_camino[secuencia[tipo]]=origen
-
         #lde=[lambda :(os.popen("bx " + self.hd_public     + temp_camino[0]).read()).rstrip("\n")]
         #temp_temp = lde[0]()
-
         lderivacion=[lambda a: (os.popen("bx " + self.hd_to_public     + temp_camino[0]).read()).rstrip("\n"),\
                      lambda a: (os.popen("bx " + self.hd_to_ec      + temp_camino[0]).read()).rstrip("\n"),\
                      lambda a: (os.popen("bx " + self.ec_to_wif     + temp_camino[2]).read()).rstrip("\n"),\
                      lambda a: (os.popen("bx wif-to-public "        + temp_camino[3]).read()).rstrip("\n"),\
                      lambda a: (os.popen("bx " + self.ec_to_address + temp_camino[4]).read()).rstrip("\n"),\
                     ]
-
         for j in range(secuencia[tipo],len(lderivacion)):
             temp_camino[j+1] = (lderivacion[j])(0)
-
         self.xprv=temp_camino[0]
         self.xpub=temp_camino[1]
         self.ec=temp_camino[2]
         self.wif=temp_camino[3]
         self.ec_pub=temp_camino[4]
         self.address_p2pkh=temp_camino[5]
-
 
     def print_consola(self):
         print("\n-%5s: %s" %(self.indice, self.xprv))
@@ -548,7 +526,6 @@ class direccion_pago(object):
             _Depurame_(378, ["Error en 'pago.cadena_wif'"])
 
 ########################################################################################
-
 def derivacion(entropia, esquema="m/44'/0'/0'/0/0", contrasena="", entropiaAmnemonico=False):
     """
     Desarrolla secuencia de derivación desde la <entropia> hasta la <direccion>
@@ -571,7 +548,6 @@ def derivacion(entropia, esquema="m/44'/0'/0'/0/0", contrasena="", entropiaAmnem
     (E): Valor utilizado como origen aleatorio. Normalizado en Base16, debe tener una logitud divisible entre 32
     frase: mnemonico (BIP39)
     seed: representacion numerica del mnemonico bip39
-
     Parametros
     ----------
     entropia: string
@@ -587,7 +563,6 @@ def derivacion(entropia, esquema="m/44'/0'/0'/0/0", contrasena="", entropiaAmnem
         False: parametro entropia se utiliza como seed.
             la secuencia comenzara con la obtencion de la primera XPrv (m).
             En este el programa desconoce la frase mnemonica.
-
     Devuelve
     --------
     En principio no devuelve nada porque esta enfocada a mostrar datos en pantalla.
@@ -600,7 +575,6 @@ def derivacion(entropia, esquema="m/44'/0'/0'/0/0", contrasena="", entropiaAmnem
     """
     hd_new=" hd-new "
     hd_public=" hd-public "
-
     arbol={'E':"",'mnemonico':"",'contrasena':contrasena,'seed':"",'esquema':esquema,'m':'', 'M':'','xpriv':[], 'xpub':[], 'pagos':[]}
     frase = entropia.split() # puede ser una frase o una semilla, decision a continuacion
     # Casos: E, mnemonico, seed
@@ -609,31 +583,26 @@ def derivacion(entropia, esquema="m/44'/0'/0'/0/0", contrasena="", entropiaAmnem
         arbol["mnemonico"]=(os.popen("bx mnemonic-new " + entropia).read()).rstrip("\n")
     elif(len(frase)>1): #Si contiene mas de una palabra es un mnemonico
         arbol["mnemonico"]=entropia
-
     if arbol["mnemonico"]:
         arbol["contrasena"] = contrasena
         contrasena = " -p \"%s\" " %(contrasena)
         arbol["seed"]=(os.popen("bx mnemonic-to-seed " + arbol["mnemonico"] + contrasena).read()).rstrip("\n")
     else:
         arbol["seed"] = entropia
-
     print("Entropia  : " + arbol["E"])
     print("mnemonico : " + arbol["mnemonico"])
     print("Seed      : " + arbol["seed"])
     print("Esquema   : " + arbol["esquema"])
-
     deriva = arbol["esquema"].split("/")
     temporal=arbol["seed"]
     for x in deriva[:-1]: #ultima especial
         x.strip() #Eliminar blancos
-
         # La claves pueden ser duras o ¿blandas?. Las duras (') no permiten deribar de la publica, 
         # las "blandas" permiten una deribar publicas de las publicas (tengo que estudiarlo mejor)
         if "'" in x:
             duro=" --hard "
         else:
             duro=""
-
 	    # La clave identificada como m o M es especial. 
         if x == "m":
             arbol["m"]=(os.popen("bx"+ hd_new + arbol["seed"]).read()).rstrip("\n")
@@ -647,7 +616,6 @@ def derivacion(entropia, esquema="m/44'/0'/0'/0/0", contrasena="", entropiaAmnem
             # Almaceno xpub para posterior estudio. No lo utilizo de momento. 
             arbol["xpub"].append((os.popen("bx hd-public -i %s %s %s" %(y, duro, temporal)).read()).rstrip("\n") + " Depura: con i y dureza")
             print ( " - %4s: %s" %(x,arbol["xpriv"][-1]))
-
     # Procesar ultima: deriva[-1]
     # La Ultima clave se trata aparte porque puedo generar mas de una dirección de pago y para ello utilizo una 
     # notacion diferente y un bucle.
@@ -655,7 +623,6 @@ def derivacion(entropia, esquema="m/44'/0'/0'/0/0", contrasena="", entropiaAmnem
         duro=" --hard "
     else:
         duro=""
-
     # Si quiero generar varias direcciones de pago lo indico los valores inicial y final: i,j
     y = (deriva[-1].strip("'")).split(",")
     # Bucle para generar las direcciones de pago.
@@ -670,11 +637,9 @@ def derivacion(entropia, esquema="m/44'/0'/0'/0/0", contrasena="", entropiaAmnem
         print("     privada_wif: " + pago["wif"])
         print("      publica_ec: " + pago["ec_pub"])
         print("   address_p2pkh: " + pago["address_p2pkh"])
-
     return 1
 
 ########################################################################################
-
 def direccionesdepago(xprv_fin):
     """
     derivar las direcciones de pago finales a partir de una hd xprv.
@@ -695,7 +660,6 @@ def direccionesdepago(xprv_fin):
     hd_to_ec=" hd-to-ec "
     ec_to_wif=" ec-to-wif "
     ec_to_address=" ec-to-address "
-
     # Limpiar direccion en cada llamada
     direccion={'xprv':"", 'xpub':"", 'ec':"", 'wif':"", 'ec_pub':"", 'address_p2pkh':""}
     direccion["xprv"]=xprv_fin
@@ -712,7 +676,6 @@ def direccionesdepago(xprv_fin):
     return direccion
 
 ########################################################################################
-
 def DesdeWif(wif):
     """
     Para estudiar la derivacion que realiza el cliente Bitcoin Colore
@@ -726,7 +689,6 @@ def DesdeWif(wif):
     direccion["ec_pub"]=(os.popen("bx wif-to-public " + direccion["wif"]).read()).rstrip("\n")
     direccion["address_p2pkh"]=(os.popen("bx"+ ec_to_address + direccion["ec_pub"]).read()).rstrip("\n")
     return direccion
-
     privada_wif  = wif.rstrip("\n")
     publica_ec = (os.popen("bx wif-to-public " + privada_wif).read()).rstrip("\n")
     address_p2pkh = (os.popen("bx"+ ec_to_address + publica_ec).read()).rstrip("\n")
@@ -734,7 +696,6 @@ def DesdeWif(wif):
     xpriv_de_wif = (os.popen("bx" + hd_new +  priv_ec).read()).rstrip("\n")
 
 ########################################################################################
-
 def _Depurame_(ref, datos, finalizar=False):
     """
     Uso:
