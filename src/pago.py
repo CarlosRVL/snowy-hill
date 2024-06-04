@@ -1,3 +1,9 @@
+""" pago.py
+Generación de las direcciones de pago
+"""
+
+import os  # para poder ejecutar comandos de shell
+
 class direccion_pago(object):
     """
     Para la version Testnet, asumimos que existe el fichero test.cfg con la configuracion necesaria. 
