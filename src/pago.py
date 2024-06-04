@@ -33,16 +33,7 @@ class direccion_pago(object):
         self.indice = indice
         self.xprv = privada
         self.testnet = testnet
-		""" Tengo que cambiar la forma en que se hace esto """
-		if (testnet):  #comprobar que existe fichero de configuracion para testnet.
-        	if not os.path.exists(FICHERO_CONFIGURACION_TESTNET):
-				print ("Error: no existe el fichero de configuracion para testnet.")
-            	exit(1)
-    		else:
-        	if not os.path.exists(FICHERO_CONFIGURACION_MAINNET):
-	            print ("Error: no existe el fichero de configuracion para mainnet.")
-            	exit(1)
-	    
+
         if (self.testnet):
             #self.hd_new       ="hd-new --version 70615956 "
             self.hd_to_public    ="hd-to-public --version 70617039 "
