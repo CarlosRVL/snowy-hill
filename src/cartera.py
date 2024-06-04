@@ -1,3 +1,9 @@
+""" cartera.py
+Clase para almacenar la cartera 
+"""
+
+import os  # para poder ejecutar comandos de shell
+
 class cartera:
     """Representa un almacen de claves que se derivan de una semilla 
     Realiza la derivacion de una familia de direcciones a raiz de una semilla.
@@ -163,7 +169,7 @@ class cartera:
         """
         pass
 
-    def print_consola(self, pagos=True):
+    def print_consola(self, pagos=True, verbose=False):
         """
         Visualizar los datos por consola. Formato por defecto
         """
@@ -177,7 +183,7 @@ class cartera:
             try :
                 nivel = self.esquema_derivacion[i]
                 print ("- %4s: %s" %(nivel, HD[0])) #(self.HDxp[i])[0]))
-                if VERBOSE:
+                if verbose:
                     print ("      - %s" %(HD[1])) #(self.HDxp[i])[1]))
             except:
                 print("Error. Nos salimos del array HDxp.", sys.exc_info()[0])
@@ -186,7 +192,7 @@ class cartera:
             for p in self.pagos:
                 p.print_consola()
 
-    def print_sencilla(self, pagos=True):
+    def print_sencilla(self, pagos=True, verbose=False):
         """
         Visualizar los datos por consola. Formato sencillo con menos datos
         """
@@ -200,7 +206,7 @@ class cartera:
             try :
                 nivel = self.esquema_derivacion[i]
                 print ("- %4s: %s" %(nivel, HD[0])) #(self.HDxp[i])[0]))
-                if VERBOSE:
+                if verbose:
                     print ("      - %s" %(HD[1])) #(self.HDxp[i])[1]))
             except:
                 print("Error. Nos salimos del array HDxp.", sys.exc_info()[0])
