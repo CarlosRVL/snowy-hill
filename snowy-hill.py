@@ -105,17 +105,9 @@ def main():
     MAINNET=not args.testnet
 	
     if (TESTNET):  #comprobar que existe fichero de configuracion para testnet.
-    #    if os.path.exists(FICHERO_CONFIGURACION_TESTNET):
-            BIP44 = "m/44'/1'/0'/0/0"
-     #   else:
-      #      print ("Error: no existe el fichero de configuracion para testnet.")
-       #     exit(1)
+	    BIP44 = "m/44'/1'/0'/0/0"
     else:
-        #if os.path.exists(FICHERO_CONFIGURACION_MAINNET):
-            BIP44 = "m/44'/0'/0'/0/0"
-        #else:
-         #   print ("Error: no existe el fichero de configuracion para mainnet.")
-          #  exit(1)
+        BIP44 = "m/44'/0'/0'/0/0"
 
     if args.esquema:
         # se permite "BIP44.n-m"
@@ -167,6 +159,11 @@ def DesdeWif(wif):
     """
     Para estudiar la derivacion que realiza el cliente Bitcoin Colore
     tratando de encontrar un punto de union con otro software de billetera.
+    PROYECTO INCOMPLETO
+    Parameters
+    ----------
+    wif : str
+        Dirección wif
     """
     if(len(wif)<1):
         return 0
