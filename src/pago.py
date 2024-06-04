@@ -5,9 +5,6 @@ Generación de las direcciones de pago
 import os  # para poder ejecutar comandos de shell
 from src.depura import _depurame_
 
-FICHERO_CONFIGURACION_TESTNET="test.cfg"
-FICHERO_CONFIGURACION_MAINNET="bx.cfg"
-
 class direccion_pago(object):
     """
     Para la version Testnet, asumimos que existe el fichero test.cfg con la configuracion necesaria. 
