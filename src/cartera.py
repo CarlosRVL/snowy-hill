@@ -33,10 +33,10 @@ class cartera:
         """
         
         """ Tengo que cambiar la forma en que se hace esto """
-		if (testnet):  #comprobar que existe fichero de configuracion para testnet.
-			if not os.path.exists(FICHERO_CONFIGURACION_TESTNET):
-				print ("Error: no existe el fichero de configuracion para testnet.")
-				exit(1)
+        if (testnet):  #comprobar que existe fichero de configuracion para testnet.
+            if not os.path.exists(FICHERO_CONFIGURACION_TESTNET):
+                print ("Error: no existe el fichero de configuracion para testnet.")
+                exit(1)
     	#	else: # EL FICHERO DE CONFIGURACION DE MAINNET NO ES NECESARIO
         #	if not os.path.exists(FICHERO_CONFIGURACION_MAINNET):
 	    #        print ("Error: no existe el fichero de configuracion para mainnet.")
