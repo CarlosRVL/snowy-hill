@@ -3,6 +3,7 @@ Clase para almacenar la cartera
 """
 
 import os  # para poder ejecutar comandos de shell
+from src.pago import direccion_pago
 
 class cartera:
     """Representa un almacen de claves que se derivan de una semilla 
