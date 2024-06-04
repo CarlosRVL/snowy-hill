@@ -5,6 +5,7 @@ Clase para almacenar la cartera
 import os  # para poder ejecutar comandos de shell
 from src.pago import direccion_pago
 from src.depura import _depurame_
+
 FICHERO_CONFIGURACION_TESTNET="test.cfg"
 #FICHERO_CONFIGURACION_MAINNET="bx.cfg"
 
