@@ -3,6 +3,7 @@ Generación de las direcciones de pago
 """
 
 import os  # para poder ejecutar comandos de shell
+from src.depura import _depurame_
 
 class direccion_pago(object):
     """
