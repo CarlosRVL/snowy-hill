@@ -37,8 +37,8 @@
 ########################################################################################
 
 # Importaciones estandar
-import os # para poder ejecutar comandos de shell
-import argparse #Manejo de argumentos en linea de comandos
+import os  # para poder ejecutar comandos de shell
+import argparse  # Manejo de argumentos en linea de comandos
 import sys
 from subprocess import Popen, PIPE
 # Importaciones de terceros
@@ -52,7 +52,7 @@ FICHERO_CONFIGURACION_MAINNET="bx.cfg"
 TESTNET=False
 MAINNET=True # es redundante, lo hago para mejor lectura. 
 
-########################################################################################
+
 def main():
     """
     Funcion principal
@@ -161,7 +161,7 @@ def main():
             except:
                 print("Error al tratar de escribir en fichero (%s)" %(ficheropagos))
 
-########################################################################################
+
 class cartera:
     """Representa un almacen de claves que se derivan de una semilla 
     Realiza la derivacion de una familia de direcciones a raiz de una semilla.
@@ -397,7 +397,7 @@ class cartera:
             cadena+=p.cadena_p2pkh()+"\n"
         return cadena
 
-########################################################################################
+
 class direccion_pago(object):
     """
     Para la version Testnet, asumimos que existe el fichero test.cfg con la configuracion necesaria. 
@@ -525,7 +525,7 @@ class direccion_pago(object):
         except:
             _Depurame_(378, ["Error en 'pago.cadena_wif'"])
 
-########################################################################################
+
 def derivacion(entropia, esquema="m/44'/0'/0'/0/0", contrasena="", entropiaAmnemonico=False):
     """
     Desarrolla secuencia de derivación desde la <entropia> hasta la <direccion>
@@ -608,8 +608,8 @@ def derivacion(entropia, esquema="m/44'/0'/0'/0/0", contrasena="", entropiaAmnem
             arbol["m"]=(os.popen("bx"+ hd_new + arbol["seed"]).read()).rstrip("\n")
             temporal = arbol["m"]
             print ( " - %4s: %s" %(x,arbol["m"]))
-        else: #Las xpriv o pub de la derivacion que no sean m o M las anadirmos a la lista xpriv[]
-            y = x.rstrip("'") # quito la marca de dureza, ya se ha registrado en variable "duro". 
+        else:  # Las xpriv o pub de la derivacion que no sean m o M las anadirmos a la lista xpriv[]
+            y = x.rstrip("'")  # quito la marca de dureza, ya se ha registrado en variable "duro". 
             # La derivacion itera sobre la xpriv previa, por lo que hay que guardar en temporal
             temporal=(os.popen("bx hd-private -i %s %s %s" %(y, duro, temporal)).read()).rstrip("\n")
             arbol["xpriv"].append(temporal)
@@ -626,7 +626,7 @@ def derivacion(entropia, esquema="m/44'/0'/0'/0/0", contrasena="", entropiaAmnem
     # Si quiero generar varias direcciones de pago lo indico los valores inicial y final: i,j
     y = (deriva[-1].strip("'")).split(",")
     # Bucle para generar las direcciones de pago.
-    for i in range(int(y[0]),int(y[-1])+1): # y[-1] representa el ultimo elemento del array. Range no incluye el ultimo por eso +1
+    for i in range(int(y[0]),int(y[-1])+1):  # y[-1] representa el ultimo elemento del array. Range no incluye el ultimo por eso +1
         xprv_fin=(os.popen("bx hd-private -i %d %s %s" %(i, duro, temporal)).read()).rstrip("\n")
         #direccion = dict{"xprv", "xpub", "ec", "wif", "ec_pub", "address"}
         pago=direccionesdepago(xprv_fin)
@@ -639,7 +639,7 @@ def derivacion(entropia, esquema="m/44'/0'/0'/0/0", contrasena="", entropiaAmnem
         print("   address_p2pkh: " + pago["address_p2pkh"])
     return 1
 
-########################################################################################
+
 def direccionesdepago(xprv_fin):
     """
     derivar las direcciones de pago finales a partir de una hd xprv.
@@ -675,7 +675,7 @@ def direccionesdepago(xprv_fin):
     direccion["address_p2pkh"]=(os.popen("bx"+ ec_to_address + direccion["ec_pub"]).read()).rstrip("\n")
     return direccion
 
-########################################################################################
+
 def DesdeWif(wif):
     """
     Para estudiar la derivacion que realiza el cliente Bitcoin Colore
@@ -695,7 +695,7 @@ def DesdeWif(wif):
     priv_ec = (os.popen("bx wif-to-ec " + privada_wif).read()).rstrip("\n")
     xpriv_de_wif = (os.popen("bx" + hd_new +  priv_ec).read()).rstrip("\n")
 
-########################################################################################
+
 def _Depurame_(ref, datos, finalizar=False):
     """
     Uso:
@@ -710,5 +710,3 @@ def _Depurame_(ref, datos, finalizar=False):
 ### Llamar a funcion principal.###
 if __name__ == "__main__":
     main()
-
-
