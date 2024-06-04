@@ -44,12 +44,11 @@ from subprocess import Popen, PIPE
 # Importaciones de terceros
 # Importaciones locales
 from src.cartera import cartera
-#from src.pago import direccion_pago
 
 VERBOSE=False
 DEPURA=False
-FICHERO_CONFIGURACION_TESTNET="test.cfg"
-FICHERO_CONFIGURACION_MAINNET="bx.cfg"
+#FICHERO_CONFIGURACION_TESTNET="test.cfg"
+#FICHERO_CONFIGURACION_MAINNET="bx.cfg"
 TESTNET=False
 MAINNET=True # es redundante, lo hago para mejor lectura. 
 
@@ -104,18 +103,19 @@ def main():
 
     TESTNET=args.testnet
     MAINNET=not args.testnet
+	
     if (TESTNET):  #comprobar que existe fichero de configuracion para testnet.
-        if os.path.exists(FICHERO_CONFIGURACION_TESTNET):
+    #    if os.path.exists(FICHERO_CONFIGURACION_TESTNET):
             BIP44 = "m/44'/1'/0'/0/0"
-        else:
-            print ("Error: no existe el fichero de configuracion para testnet.")
-            exit(1)
+     #   else:
+      #      print ("Error: no existe el fichero de configuracion para testnet.")
+       #     exit(1)
     else:
-        if os.path.exists(FICHERO_CONFIGURACION_MAINNET):
+        #if os.path.exists(FICHERO_CONFIGURACION_MAINNET):
             BIP44 = "m/44'/0'/0'/0/0"
-        else:
-            print ("Error: no existe el fichero de configuracion para mainnet.")
-            exit(1)
+        #else:
+         #   print ("Error: no existe el fichero de configuracion para mainnet.")
+          #  exit(1)
 
     if args.esquema:
         # se permite "BIP44.n-m"
@@ -163,7 +163,6 @@ def main():
                 print("Error al tratar de escribir en fichero (%s)" %(ficheropagos))
 
 
-
 def DesdeWif(wif):
     """
     Para estudiar la derivacion que realiza el cliente Bitcoin Colore
@@ -183,17 +182,6 @@ def DesdeWif(wif):
     priv_ec = (os.popen("bx wif-to-ec " + privada_wif).read()).rstrip("\n")
     xpriv_de_wif = (os.popen("bx" + hd_new +  priv_ec).read()).rstrip("\n")
 
-
-def _Depurame_(ref, datos, finalizar=False):
-    """
-    Uso:
-         #_Depurame_(numero,[dato1, dato2,...])
-    """
-    cadena = "][".join([str(elemento) for elemento in datos])
-    print("* Depuracion ref-%d: [%s]" %(ref, cadena))
-    if finalizar:
-        print ("=== Fin del programa. Se ha llamado a depuracion con orden de finalizar ===")
-        exit(1)
 
 ### Llamar a funcion principal.###
 if __name__ == "__main__":
