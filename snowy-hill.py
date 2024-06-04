@@ -44,7 +44,7 @@ from subprocess import Popen, PIPE
 # Importaciones de terceros
 # Importaciones locales
 from src.cartera import cartera
-from src.pago import all
+from src.pago import direccion_pago
 
 VERBOSE=False
 DEPURA=False
