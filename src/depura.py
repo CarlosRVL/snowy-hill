@@ -4,7 +4,7 @@ Admite una referencia y datos para poder identificar el problema.
 Usar "finalizar=true" para detener la ejecución
 """
 
-def _Depurame_(ref, datos, finalizar=False):
+def _depurame_(ref, datos, finalizar=False):
     """
     Uso:
          #_Depurame_(numero,[dato1, dato2,...])
