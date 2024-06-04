@@ -5,6 +5,8 @@ Clase para almacenar la cartera
 import os  # para poder ejecutar comandos de shell
 from src.pago import direccion_pago
 from src.depura import _depurame_
+FICHERO_CONFIGURACION_TESTNET="test.cfg"
+#FICHERO_CONFIGURACION_MAINNET="bx.cfg"
 
 class cartera:
     """Representa un almacen de claves que se derivan de una semilla 
@@ -28,6 +30,17 @@ class cartera:
         Return:
                None ( ): nada
         """
+        
+        """ Tengo que cambiar la forma en que se hace esto """
+		if (testnet):  #comprobar que existe fichero de configuracion para testnet.
+        	if not os.path.exists(FICHERO_CONFIGURACION_TESTNET):
+			    print ("Error: no existe el fichero de configuracion para testnet.")
+                exit(1)
+    	#	else: # EL FICHERO DE CONFIGURACION DE MAINNET NO ES NECESARIO
+        #	if not os.path.exists(FICHERO_CONFIGURACION_MAINNET):
+	    #        print ("Error: no existe el fichero de configuracion para mainnet.")
+        #        exit(1)
+	    
         self.semilla=['', '', '', '', ''] # E, Mnemon, Seed, m, M
         self.indice_m=3 # posicion de m en semilla[]¿?
         self.esquema=""  #Esquema de derivacion en una sola cadena
