@@ -1,8 +1,5 @@
 # Wordlist
 
-## BIP39
-
-
 | | Direction | Default length | Wordlist | Passphrase | Used since |
 |-|----------|----------------|----------|------------|------------|
 |**BIP39**|	Unidirectional|12 or 24 words|2048 words|Optional|2013|
